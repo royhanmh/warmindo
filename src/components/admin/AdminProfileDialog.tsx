@@ -20,12 +20,13 @@ export function AdminProfileDialog({ open, onOpenChange }: AdminProfileDialogPro
 
     useEffect(() => {
         if (open) {
-            setUsername(adminConfig.username)
-            setPin(adminConfig.pin)
+            // Only update if values differ to avoid strict mode double-render warnings
+            if (username !== adminConfig.username) setUsername(adminConfig.username)
+            if (pin !== adminConfig.pin) setPin(adminConfig.pin)
             setSuccess(false)
             setError(null)
         }
-    }, [open, adminConfig])
+    }, [open, adminConfig, username, pin])
 
     const handleSave = () => {
         if (!username || pin.length < 4) return

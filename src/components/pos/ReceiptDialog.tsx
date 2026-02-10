@@ -1,9 +1,6 @@
-import { useRef } from 'react'
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
@@ -17,8 +14,6 @@ interface ReceiptDialogProps {
 }
 
 export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialogProps) {
-    const contentRef = useRef<HTMLDivElement>(null)
-
     if (!transaction) return null
 
     const handlePrint = () => {

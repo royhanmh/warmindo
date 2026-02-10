@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatRupiah } from '@/data/menu'
 import { Search, RotateCcw, Printer, Receipt, CheckCircle2, ArrowLeftRight, User } from 'lucide-react'
-import { useTransactions } from '@/contexts/TransactionContext'
+import { type Transaction, useTransactions } from '@/contexts/TransactionContext'
 import { ReceiptDialog } from '@/components/pos/ReceiptDialog'
 
 export function TransactionHistoryPage() {
     const { transactions } = useTransactions()
     const [search, setSearch] = useState('')
-    const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
 
     const filtered = transactions.filter(t =>
         t.id.toLowerCase().includes(search.toLowerCase()) ||

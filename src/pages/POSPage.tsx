@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { MenuGrid } from '@/components/pos/MenuGrid'
 import { BuildYourBowlDrawer } from '@/components/pos/BuildYourBowlDrawer'
-import { type MenuItem, type MenuCategory, formatRupiah } from '@/data/menu'
+import { type MenuItem, type MenuCategory } from '@/data/menu'
 import { useCart } from '@/contexts/CartContext'
 import { UtensilsCrossed, GlassWater, Cherry } from 'lucide-react'
 

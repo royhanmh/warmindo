@@ -15,7 +15,7 @@ import {
     DrawerClose,
 } from '@/components/ui/drawer'
 import { useCart } from '@/contexts/CartContext'
-import { useTransactions } from '@/contexts/TransactionContext'
+import { useTransactions, type Transaction } from '@/contexts/TransactionContext'
 import { formatRupiah } from '@/data/menu'
 import { ReceiptDialog } from '@/components/pos/ReceiptDialog'
 import {
@@ -46,7 +46,7 @@ export function CartSidebar() {
     const [nameError, setNameError] = useState(false)
 
     // Receipt & Auto-close State
-    const [lastTransaction, setLastTransaction] = useState<any>(null)
+    const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null)
     const [showReceipt, setShowReceipt] = useState(false)
     const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -76,18 +76,20 @@ export function CartSidebar() {
             })),
             total: total,
             payment: method,
-            status: 'completed',
+            status: 'completed' as const,
             customerName: customerName
         }
 
+        const trxId = `TRX-${Date.now().toString().slice(-4)}`
+
         setLastTransaction({
-            id: `TRX-${Date.now().toString().slice(-4)}`,
+            id: trxId,
             date: format(now, 'yyyy-MM-dd'),
             time: format(now, 'HH:mm'),
             ...txData
         })
 
-        addTransaction(txData as any)
+        addTransaction(txData)
         setPaymentStep('success')
 
         // Restore Auto-Close Logic

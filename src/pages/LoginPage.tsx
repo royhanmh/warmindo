@@ -23,7 +23,7 @@ export function LoginPage() {
             if (!success) {
                 setError('PIN salah. Silakan coba lagi. (Hint: 1234)')
             }
-        } catch (err) {
+        } catch {
             setError('Terjadi kesalahan. Silakan coba lagi.')
         } finally {
             setIsLoading(false)
