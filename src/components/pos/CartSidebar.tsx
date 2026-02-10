@@ -48,7 +48,7 @@ export function CartSidebar() {
     // Receipt & Auto-close State
     const [lastTransaction, setLastTransaction] = useState<any>(null)
     const [showReceipt, setShowReceipt] = useState(false)
-    const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const itemCount = getItemCount()
     const total = getTotal()
