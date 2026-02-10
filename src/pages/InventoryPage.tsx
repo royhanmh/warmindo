@@ -1,0 +1,236 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle,
+    DialogDescription, DialogFooter,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { inventoryData, getStockStatus, type InventoryItem } from '@/data/inventory'
+import { Search, Plus, Package, AlertTriangle } from 'lucide-react'
+
+export function InventoryPage() {
+    const [search, setSearch] = useState('')
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [inventory, setInventory] = useState(inventoryData)
+    const [newItem, setNewItem] = useState({ name: '', quantity: '', unit: '' })
+
+    const filtered = inventory.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+    )
+
+    const lowStockCount = inventory.filter(i => getStockStatus(i) !== 'in-stock').length
+
+    const handleAddStock = () => {
+        if (!newItem.name || !newItem.quantity || !newItem.unit) return
+        const item: InventoryItem = {
+            id: `inv-${Date.now()}`,
+            name: newItem.name,
+            category: 'Other',
+            stock: parseInt(newItem.quantity),
+            unit: newItem.unit,
+            threshold: Math.ceil(parseInt(newItem.quantity) * 0.2),
+            lastRestocked: new Date().toISOString().split('T')[0],
+        }
+        setInventory(prev => [...prev, item])
+        setNewItem({ name: '', quantity: '', unit: '' })
+        setDialogOpen(false)
+    }
+
+    const statusBadge = (item: InventoryItem) => {
+        const status = getStockStatus(item)
+        switch (status) {
+            case 'in-stock':
+                return <Badge variant="success">In Stock</Badge>
+            case 'low-stock':
+                return <Badge variant="warning">⚠️ Low Stock</Badge>
+            case 'out-of-stock':
+                return <Badge variant="destructive">Out of Stock</Badge>
+        }
+    }
+
+    return (
+        <div className="p-6">
+            {/* Header */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+            >
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="font-heading text-2xl font-bold text-gray-900">
+                            📦 Inventory Management
+                        </h1>
+                        <p className="text-muted-foreground text-sm mt-1">
+                            Kelola stok bahan dan pantau ketersediaan
+                        </p>
+                    </div>
+                    <Button onClick={() => setDialogOpen(true)} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Tambah Stok
+                    </Button>
+                </div>
+            </motion.div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white rounded-xl border p-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                            <Package className="w-5 h-5 text-success" />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-heading font-bold">{inventory.length}</p>
+                            <p className="text-xs text-muted-foreground">Total Items</p>
+                        </div>
+                    </div>
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white rounded-xl border p-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                            <AlertTriangle className="w-5 h-5 text-accent-600" />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-heading font-bold text-accent-600">{lowStockCount}</p>
+                            <p className="text-xs text-muted-foreground">Low / Out</p>
+                        </div>
+                    </div>
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white rounded-xl border p-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Package className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <p className="text-2xl font-heading font-bold">
+                                {inventory.reduce((sum, i) => sum + i.stock, 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Total Units</p>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                    placeholder="Cari item..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 bg-white"
+                />
+            </div>
+
+            {/* Table */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-xl border overflow-hidden"
+            >
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-gray-50">
+                            <TableHead>Item</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead className="text-right">Stock</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Last Restocked</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filtered.map((item, index) => (
+                            <motion.tr
+                                key={item.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.03 }}
+                                className="border-b transition-colors hover:bg-muted/50"
+                            >
+                                <TableCell className="font-semibold">{item.name}</TableCell>
+                                <TableCell className="text-muted-foreground">{item.category}</TableCell>
+                                <TableCell className="text-right font-heading font-bold">
+                                    {item.stock}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{item.unit}</TableCell>
+                                <TableCell>{statusBadge(item)}</TableCell>
+                                <TableCell className="text-muted-foreground text-sm">{item.lastRestocked}</TableCell>
+                            </motion.tr>
+                        ))}
+                    </TableBody>
+                </Table>
+            </motion.div>
+
+            {/* Add Stock Dialog */}
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Tambah Stok Baru</DialogTitle>
+                        <DialogDescription>
+                            Tambahkan item baru ke dalam inventory
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Nama Item</Label>
+                            <Input
+                                id="name"
+                                value={newItem.name}
+                                onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="e.g. Indomie Goreng"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="quantity">Jumlah</Label>
+                                <Input
+                                    id="quantity"
+                                    type="number"
+                                    value={newItem.quantity}
+                                    onChange={(e) => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
+                                    placeholder="100"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="unit">Satuan</Label>
+                                <Input
+                                    id="unit"
+                                    value={newItem.unit}
+                                    onChange={(e) => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
+                                    placeholder="packs"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
+                        <Button onClick={handleAddStock}>Tambah</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    )
+}
