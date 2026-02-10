@@ -23,11 +23,19 @@ const pageVariants = {
 
 function AppContent() {
   const { isAuthenticated, user } = useAuth()
-  const [activePage, setActivePage] = useState<PageType>('pos')
+  const [activePage, setActivePage] = useState<PageType>(() => {
+    const saved = localStorage.getItem('warmindo-active-page') as PageType | null
+    return saved || 'pos'
+  })
+
+  const handlePageChange = (page: PageType) => {
+    setActivePage(page)
+    localStorage.setItem('warmindo-active-page', page)
+  }
 
   // RBAC Redirect
   if (user?.role === 'cashier' && ['inventory', 'dashboard'].includes(activePage)) {
-    setActivePage('pos')
+    handlePageChange('pos')
   }
 
   useEffect(() => {
@@ -55,11 +63,11 @@ function AppContent() {
   return (
     <MainLayout
       sidebar={
-        <AppSidebar activePage={activePage} onPageChange={setActivePage} />
+        <AppSidebar activePage={activePage} onPageChange={handlePageChange} />
       }
       cart={<CartSidebar />}
       bottomNav={
-        <MobileNav activePage={activePage} onPageChange={setActivePage} />
+        <MobileNav activePage={activePage} onPageChange={handlePageChange} />
       }
     >
       <AnimatePresence mode="wait">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ShoppingCart, ChefHat, X } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useCart } from '@/contexts/CartContext'
+import { UserProfile } from './UserProfile'
 
 interface MainLayoutProps {
     sidebar: ReactNode
@@ -26,11 +27,13 @@ export function MainLayout({ sidebar, children, cart, bottomNav }: MainLayoutPro
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                 {/* Mobile Header */}
                 {isMobile && (
-                    <header className="h-14 border-b bg-white flex items-center justify-center shrink-0 px-4 relative">
+                    <header className="h-14 border-b bg-white flex items-center justify-between shrink-0 px-4">
+                        <div className="w-10" />
                         <div className="flex items-center gap-2 font-heading font-bold text-lg text-primary">
                             <ChefHat className="w-6 h-6" />
                             <span>Warmindo Ops</span>
                         </div>
+                        <UserProfile collapsed direction="down" />
                     </header>
                 )}
 

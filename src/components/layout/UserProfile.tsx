@@ -13,13 +13,14 @@ import { cn } from '@/lib/utils'
 
 interface UserProfileProps {
     collapsed?: boolean
+    direction?: 'up' | 'down'
 }
 
 import { UserSettingsDialog } from '@/components/admin/UserSettingsDialog'
 import { AdminProfileDialog } from '@/components/admin/AdminProfileDialog'
 import { CashierProfileDialog } from '@/components/layout/CashierProfileDialog'
 
-export function UserProfile({ collapsed }: UserProfileProps) {
+export function UserProfile({ collapsed, direction = 'up' }: UserProfileProps) {
     const { user, logout } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
     const [showSettings, setShowSettings] = useState(false)
@@ -66,12 +67,17 @@ export function UserProfile({ collapsed }: UserProfileProps) {
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            initial={{ opacity: 0, y: direction === 'down' ? -10 : 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            exit={{ opacity: 0, y: direction === 'down' ? -10 : 10, scale: 0.95 }}
                             transition={{ duration: 0.2, ease: 'easeOut' }}
-                            className="absolute bottom-full left-0 mb-3 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-50 overflow-hidden"
-                            style={{ marginLeft: collapsed ? '4rem' : '0' }}
+                            className={cn(
+                                'absolute w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-50 overflow-hidden',
+                                direction === 'down'
+                                    ? 'top-full right-0 mt-2'
+                                    : 'bottom-full left-0 mb-3'
+                            )}
+                            style={direction === 'up' ? { marginLeft: collapsed ? '4rem' : '0' } : undefined}
                         >
                             {/* User Info Header */}
                             <div className="flex items-center gap-3 p-3 mb-2 bg-gray-50 rounded-lg">
