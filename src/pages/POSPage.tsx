@@ -58,20 +58,22 @@ export function POSPage() {
                 value={activeCategory}
                 onValueChange={(val) => setActiveCategory(val as MenuCategory)}
             >
-                <TabsList className="mb-6 bg-white shadow-sm border">
-                    <TabsTrigger value="noodles" className="gap-2 px-6">
-                        <UtensilsCrossed className="w-4 h-4" />
-                        Mi Instan
-                    </TabsTrigger>
-                    <TabsTrigger value="drinks" className="gap-2 px-6">
-                        <GlassWater className="w-4 h-4" />
-                        Minuman
-                    </TabsTrigger>
-                    <TabsTrigger value="toppings" className="gap-2 px-6">
-                        <Cherry className="w-4 h-4" />
-                        Topping
-                    </TabsTrigger>
-                </TabsList>
+                <div className="sticky top-0 z-10 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-4 pt-1">
+                    <TabsList className="bg-white shadow-sm border w-full md:w-auto grid grid-cols-3 md:inline-flex">
+                        <TabsTrigger value="noodles" className="gap-1.5 md:gap-2 md:px-6">
+                            <UtensilsCrossed className="w-4 h-4 shrink-0" />
+                            <span>Mi Instan</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="drinks" className="gap-1.5 md:gap-2 md:px-6">
+                            <GlassWater className="w-4 h-4 shrink-0" />
+                            <span>Minuman</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="toppings" className="gap-1.5 md:gap-2 md:px-6">
+                            <Cherry className="w-4 h-4 shrink-0" />
+                            <span>Topping</span>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <TabsContent value="noodles">
                     <MenuGrid category="noodles" onItemClick={handleItemClick} />

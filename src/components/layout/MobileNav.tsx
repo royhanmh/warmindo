@@ -28,10 +28,10 @@ export function MobileNav({ activePage, onPageChange }: MobileNavProps) {
                         {isActive && (
                             <motion.div
                                 layoutId="mobileNavActive"
-                                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full"
+                                className="absolute top-0 inset-x-0 mx-auto w-6 h-1 bg-primary rounded-b-full"
                             />
                         )}
-                        <Icon className={cn("w-6 h-6", isActive && "fill-current/10")} />
+                        <Icon className={cn("w-5 h-5", isActive && "fill-current/10")} />
                         <span className="text-[10px] font-medium">{label}</span>
                     </button>
                 )
