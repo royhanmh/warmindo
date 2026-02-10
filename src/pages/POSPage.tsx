@@ -38,7 +38,7 @@ export function POSPage() {
     }
 
     return (
-        <div className="p-6">
+        <div className="p-4 md:p-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}

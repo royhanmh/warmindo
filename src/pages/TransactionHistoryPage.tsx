@@ -27,7 +27,7 @@ export function TransactionHistoryPage() {
         .reduce((sum, t) => sum + t.total, 0)
 
     return (
-        <div className="p-6">
+        <div className="p-4 md:p-6">
             <ReceiptDialog
                 open={!!selectedTransaction}
                 onOpenChange={(open) => !open && setSelectedTransaction(null)}
@@ -49,7 +49,7 @@ export function TransactionHistoryPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="flex items-center justify-between bg-white rounded-xl border p-4 mb-6"
+                className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white rounded-xl border p-4 mb-6 gap-4"
             >
                 <div className="flex items-center gap-6">
                     <div>
@@ -83,7 +83,7 @@ export function TransactionHistoryPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border overflow-hidden"
+                className="bg-white rounded-xl border overflow-hidden overflow-x-auto"
             >
                 <Table>
                     <TableHeader>

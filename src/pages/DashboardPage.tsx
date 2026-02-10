@@ -70,7 +70,7 @@ export function DashboardPage() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-3 gap-4 mt-6"
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"
             >
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-success">
@@ -131,7 +131,7 @@ export function DashboardPage() {
                 </motion.div>
             </motion.div>
 
-            <div className="grid grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 {/* Best Sellers */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

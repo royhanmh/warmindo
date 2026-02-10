@@ -80,6 +80,7 @@ export function CartSidebar() {
             customerName: customerName
         }
 
+        // eslint-disable-next-line react-hooks/purity
         const trxId = `TRX-${Date.now().toString().slice(-4)}`
 
         setLastTransaction({

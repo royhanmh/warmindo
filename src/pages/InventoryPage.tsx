@@ -55,7 +55,7 @@ export function InventoryPage() {
     }
 
     return (
-        <div className="p-6">
+        <div className="p-4 md:p-6">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -79,7 +79,7 @@ export function InventoryPage() {
             </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ export function InventoryPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border overflow-hidden"
+                className="bg-white rounded-xl border overflow-hidden overflow-x-auto"
             >
                 <Table>
                     <TableHeader>

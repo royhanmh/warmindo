@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AppSidebar, type PageType } from '@/components/layout/AppSidebar'
+import { AppSidebar } from '@/components/layout/AppSidebar'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { CartSidebar } from '@/components/pos/CartSidebar'
 import { CartProvider } from '@/contexts/CartContext'
@@ -8,6 +8,8 @@ import { POSPage } from '@/pages/POSPage'
 import { InventoryPage } from '@/pages/InventoryPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { TransactionHistoryPage } from '@/pages/TransactionHistoryPage'
+import { MobileNav } from '@/components/layout/MobileNav'
+import { type PageType } from '@/config/nav'
 
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { LoginPage } from '@/pages/LoginPage'
@@ -56,6 +58,9 @@ function AppContent() {
         <AppSidebar activePage={activePage} onPageChange={setActivePage} />
       }
       cart={<CartSidebar />}
+      bottomNav={
+        <MobileNav activePage={activePage} onPageChange={setActivePage} />
+      }
     >
       <AnimatePresence mode="wait">
         <motion.div

@@ -1,17 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 import {
-    UtensilsCrossed,
-    Boxes,
-    Receipt,
-    BarChart3,
     ChefHat,
-    type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserProfile } from './UserProfile'
 
-export type PageType = 'pos' | 'inventory' | 'transactions' | 'dashboard'
+import { NAV_ITEMS, type PageType } from '@/config/nav'
 
 interface AppSidebarProps {
     activePage: PageType
@@ -20,15 +15,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ activePage, onPageChange }: AppSidebarProps) {
     const { user } = useAuth()
-
-    const allNavItems: { id: PageType; icon: LucideIcon; label: string; roles: string[] }[] = [
-        { id: 'pos', icon: UtensilsCrossed, label: 'POS', roles: ['admin', 'cashier'] },
-        { id: 'inventory', icon: Boxes, label: 'Stok', roles: ['admin'] },
-        { id: 'transactions', icon: Receipt, label: 'Riwayat', roles: ['admin', 'cashier'] },
-        { id: 'dashboard', icon: BarChart3, label: 'Laporan', roles: ['admin'] },
-    ]
-
-    const navItems = allNavItems.filter(item => user && item.roles.includes(user.role))
+    const navItems = NAV_ITEMS.filter(item => user && item.roles.includes(user.role))
     return (
         <aside className="flex flex-col items-center w-20 bg-gradient-to-b from-gray-900 to-gray-800 py-6 gap-2 shrink-0">
             {/* Logo */}

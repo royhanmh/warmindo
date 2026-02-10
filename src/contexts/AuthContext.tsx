@@ -46,9 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (stored) {
             const parsed = JSON.parse(stored)
             // Migration: Ensure joinDate exists
-            return parsed.map((c: any) => ({
+            return parsed.map((c: Record<string, unknown>) => ({
                 ...c,
-                joinDate: c.joinDate || new Date().toISOString()
+                joinDate: (c.joinDate as string) || new Date().toISOString()
             }))
         }
 
