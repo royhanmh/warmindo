@@ -218,7 +218,7 @@ export function DashboardPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {lowStockItems.map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-accent/5 border border-accent/20">
                                         <span className="text-sm font-medium">{item.name}</span>

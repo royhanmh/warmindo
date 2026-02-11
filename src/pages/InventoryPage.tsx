@@ -11,13 +11,15 @@ import {
     DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { inventoryData, getStockStatus, type InventoryItem } from '@/data/inventory'
+import { getStockStatus, type InventoryItem } from '@/data/inventory'
+import { loadInventory, saveInventory } from '@/lib/inventory-store'
+import { Select } from '@/components/ui/native-select'
 import { Search, Plus, Package, AlertTriangle } from 'lucide-react'
 
 export function InventoryPage() {
     const [search, setSearch] = useState('')
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [inventory, setInventory] = useState(inventoryData)
+    const [inventory, setInventory] = useState<InventoryItem[]>(loadInventory)
     const [newItem, setNewItem] = useState({ name: '', quantity: '', unit: '' })
 
     const filtered = inventory.filter(item =>
@@ -27,17 +29,18 @@ export function InventoryPage() {
     const lowStockCount = inventory.filter(i => getStockStatus(i) !== 'in-stock').length
 
     const handleAddStock = () => {
-        if (!newItem.name || !newItem.quantity || !newItem.unit) return
-        const item: InventoryItem = {
-            id: `inv-${Date.now()}`,
-            name: newItem.name,
-            category: 'Other',
-            stock: parseInt(newItem.quantity),
-            unit: newItem.unit,
-            threshold: Math.ceil(parseInt(newItem.quantity) * 0.2),
-            lastRestocked: new Date().toISOString().split('T')[0],
-        }
-        setInventory(prev => [...prev, item])
+        if (!newItem.name || !newItem.quantity) return
+        const qty = parseInt(newItem.quantity)
+        if (isNaN(qty) || qty <= 0) return
+
+        const today = new Date().toISOString().split('T')[0]
+        const updated = inventory.map(item =>
+            item.id === newItem.name
+                ? { ...item, stock: item.stock + qty, lastRestocked: today }
+                : item
+        )
+        setInventory(updated)
+        saveInventory(updated)
         setNewItem({ name: '', quantity: '', unit: '' })
         setDialogOpen(false)
     }
@@ -188,30 +191,43 @@ export function InventoryPage() {
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Tambah Stok Baru</DialogTitle>
+                        <DialogTitle>Tambah Stok</DialogTitle>
                         <DialogDescription>
-                            Tambahkan item baru ke dalam inventory
+                            Pilih item dan masukkan jumlah stok yang ditambahkan
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Nama Item</Label>
-                            <Input
-                                id="name"
+                            <Label htmlFor="stock-item">Pilih Item</Label>
+                            <Select
+                                id="stock-item"
                                 value={newItem.name}
-                                onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                                placeholder="e.g. Indomie Goreng"
-                            />
+                                onChange={(e) => {
+                                    const selected = inventory.find(i => i.id === e.target.value)
+                                    setNewItem(prev => ({
+                                        ...prev,
+                                        name: e.target.value,
+                                        unit: selected?.unit || ''
+                                    }))
+                                }}
+                            >
+                                <option value="">-- Pilih item --</option>
+                                {inventory.map(item => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name} (Stok: {item.stock} {item.unit})
+                                    </option>
+                                ))}
+                            </Select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="quantity">Jumlah</Label>
+                                <Label htmlFor="quantity">Jumlah Tambah</Label>
                                 <Input
                                     id="quantity"
                                     type="number"
                                     value={newItem.quantity}
                                     onChange={(e) => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
-                                    placeholder="100"
+                                    placeholder="50"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -219,15 +235,15 @@ export function InventoryPage() {
                                 <Input
                                     id="unit"
                                     value={newItem.unit}
-                                    onChange={(e) => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
-                                    placeholder="packs"
+                                    disabled
+                                    className="bg-muted"
                                 />
                             </div>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
-                        <Button onClick={handleAddStock}>Tambah</Button>
+                        <Button onClick={handleAddStock} disabled={!newItem.name || !newItem.quantity}>Tambah Stok</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

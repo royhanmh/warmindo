@@ -1,4 +1,16 @@
-export type MenuCategory = 'noodles' | 'drinks' | 'toppings'
+export type MenuCategory = string
+
+export interface CategoryItem {
+    id: string
+    label: string
+    emoji: string
+}
+
+export const defaultCategories: CategoryItem[] = [
+    { id: 'noodles', label: 'Mi Instan', emoji: '🍜' },
+    { id: 'drinks', label: 'Minuman', emoji: '🥤' },
+    { id: 'toppings', label: 'Topping', emoji: '🧀' },
+]
 
 export interface MenuItem {
     id: string
