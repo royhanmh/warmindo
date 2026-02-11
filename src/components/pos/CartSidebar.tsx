@@ -35,7 +35,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 
-type PaymentStep = 'select' | 'success'
+type PaymentStep = 'select' | 'cash-input' | 'success'
 
 export function CartSidebar() {
     const { items, bounceKey, removeItem, updateQuantity, clearCart, getTotal, getItemCount, customerName, setCustomerName } = useCart()
@@ -44,6 +44,8 @@ export function CartSidebar() {
     const [paymentStep, setPaymentStep] = useState<PaymentStep>('select')
     const [selectedMethod, setSelectedMethod] = useState<string | null>(null)
     const [nameError, setNameError] = useState(false)
+    const [cashInput, setCashInput] = useState('')
+    const [cashChange, setCashChange] = useState(0)
 
     // Receipt & Auto-close State
     const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null)
@@ -61,11 +63,31 @@ export function CartSidebar() {
         }
         setPaymentStep('select')
         setSelectedMethod(null)
+        setCashInput('')
+        setCashChange(0)
         setPayDrawerOpen(true)
     }
 
     const handleSelectMethod = (method: string) => {
         setSelectedMethod(method)
+        if (method === 'Cash') {
+            setCashInput('')
+            setCashChange(0)
+            setPaymentStep('cash-input')
+            return
+        }
+        // For non-cash methods, process immediately
+        processPayment(method)
+    }
+
+    const handleCashConfirm = () => {
+        const paid = parseInt(cashInput)
+        if (isNaN(paid) || paid < total) return
+        setCashChange(paid - total)
+        processPayment('Cash', paid, paid - total)
+    }
+
+    const processPayment = (method: string, cashPaid?: number, change?: number) => {
 
         const now = new Date()
         const txData = {
@@ -77,7 +99,9 @@ export function CartSidebar() {
             total: total,
             payment: method,
             status: 'completed' as const,
-            customerName: customerName
+            customerName: customerName,
+            ...(cashPaid !== undefined && { cashPaid }),
+            ...(change !== undefined && { change }),
         }
 
         // eslint-disable-next-line react-hooks/purity
@@ -103,6 +127,8 @@ export function CartSidebar() {
             clearCart()
             setPaymentStep('select')
             setSelectedMethod(null)
+            setCashInput('')
+            setCashChange(0)
         }, 4000) // 4 seconds to view success/print
     }
 
@@ -401,6 +427,93 @@ export function CartSidebar() {
                                     </DrawerClose>
                                 </DrawerFooter>
                             </motion.div>
+                        ) : paymentStep === 'cash-input' ? (
+                            <motion.div
+                                key="cash-input"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                            >
+                                <DrawerHeader className="text-left">
+                                    <DrawerTitle className="text-xl">💵 Pembayaran Cash</DrawerTitle>
+                                    <DrawerDescription>
+                                        Total: <span className="font-heading font-bold text-primary text-lg">{formatRupiah(total)}</span>
+                                    </DrawerDescription>
+                                </DrawerHeader>
+
+                                <div className="px-4 pb-4 space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Uang Diterima</label>
+                                        <Input
+                                            type="number"
+                                            value={cashInput}
+                                            onChange={(e) => setCashInput(e.target.value)}
+                                            placeholder="Masukkan jumlah uang..."
+                                            className="text-lg h-12 font-heading font-bold"
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {/* Quick amount buttons */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { label: 'Uang Pas', value: total },
+                                            ...[
+                                                Math.ceil(total / 5000) * 5000,
+                                                Math.ceil(total / 10000) * 10000,
+                                                Math.ceil(total / 20000) * 20000,
+                                                Math.ceil(total / 50000) * 50000,
+                                                100000,
+                                            ]
+                                                .filter((v, i, arr) => v > total && arr.indexOf(v) === i)
+                                                .slice(0, 5)
+                                                .map(v => ({ label: formatRupiah(v), value: v }))
+                                        ].map(({ label, value }) => (
+                                            <Button
+                                                key={value}
+                                                variant={cashInput === value.toString() ? 'default' : 'outline'}
+                                                size="sm"
+                                                className="text-xs"
+                                                onClick={() => setCashInput(value.toString())}
+                                            >
+                                                {label}
+                                            </Button>
+                                        ))}
+                                    </div>
+
+                                    {/* Change display */}
+                                    {cashInput && parseInt(cashInput) >= total && (
+                                        <div className="bg-success/10 border border-success/20 rounded-xl p-4 text-center">
+                                            <p className="text-sm text-muted-foreground mb-1">Kembalian</p>
+                                            <p className="font-heading font-bold text-2xl text-success">
+                                                {formatRupiah(parseInt(cashInput) - total)}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {cashInput && parseInt(cashInput) < total && (
+                                        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-center">
+                                            <p className="text-sm text-destructive font-medium">
+                                                Uang kurang {formatRupiah(total - parseInt(cashInput))}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <DrawerFooter>
+                                    <Button
+                                        className="w-full"
+                                        size="lg"
+                                        onClick={handleCashConfirm}
+                                        disabled={!cashInput || parseInt(cashInput) < total}
+                                    >
+                                        Bayar {formatRupiah(total)}
+                                    </Button>
+                                    <Button variant="outline" className="w-full" onClick={() => setPaymentStep('select')}>
+                                        Kembali
+                                    </Button>
+                                </DrawerFooter>
+                            </motion.div>
                         ) : (
                             <motion.div
                                 key="success"
@@ -425,6 +538,18 @@ export function CartSidebar() {
                                     <p className="text-muted-foreground">
                                         via <span className="font-semibold text-foreground">{selectedMethod}</span> — {formatRupiah(total)}
                                     </p>
+                                    {lastTransaction?.cashPaid !== undefined && (
+                                        <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-1">
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">Dibayar</span>
+                                                <span className="font-semibold">{formatRupiah(lastTransaction.cashPaid)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">Kembalian</span>
+                                                <span className="font-bold text-success">{formatRupiah(lastTransaction.change || 0)}</span>
+                                            </div>
+                                        </div>
+                                    )}
                                     <p className="text-xs text-muted-foreground mt-4 animate-pulse">
                                         Menutup otomatis...
                                     </p>

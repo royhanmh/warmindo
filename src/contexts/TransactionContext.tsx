@@ -18,6 +18,8 @@ export interface Transaction {
     status: 'completed' | 'refunded'
     customerName: string
     cashierName?: string
+    cashPaid?: number
+    change?: number
 }
 
 interface TransactionContextType {
