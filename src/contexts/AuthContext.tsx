@@ -32,7 +32,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
+    const [user, setUser] = useState<User | null>(() => {
+        const stored = localStorage.getItem('warmindo_active_user')
+        return stored ? JSON.parse(stored) : null
+    })
 
     // Admin Credential State
     const [adminConfig, setAdminConfig] = useState<{ username: string; pin: string }>(() => {
@@ -61,6 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return [{ id: 'c-1', username: 'Kasir 1', pin: '1234', joinDate: new Date().toISOString() }]
     })
+
+    // Persist User
+    useEffect(() => {
+        if (user) {
+            localStorage.setItem('warmindo_active_user', JSON.stringify(user))
+        } else {
+            localStorage.removeItem('warmindo_active_user')
+        }
+    }, [user])
 
     // Persist Admin Config
     useEffect(() => {

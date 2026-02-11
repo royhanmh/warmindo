@@ -15,7 +15,7 @@ export interface Transaction {
     items: TransactionItem[]
     total: number
     payment: string
-    status: 'completed' | 'refunded'
+    status: 'completed' | 'refunded' | 'pending'
     customerName: string
     cashierName?: string
     cashPaid?: number
@@ -25,6 +25,7 @@ export interface Transaction {
 interface TransactionContextType {
     transactions: Transaction[]
     addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'time'>) => void
+    updateTransaction: (id: string, updates: Partial<Transaction>) => void
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined)
@@ -65,12 +66,15 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
             time: format(now, 'HH:mm'),
             ...data
         }
-        // Add to beginning of list
         setTransactions(prev => [newTransaction, ...prev])
     }
 
+    const updateTransaction = (id: string, updates: Partial<Transaction>) => {
+        setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t))
+    }
+
     return (
-        <TransactionContext.Provider value={{ transactions, addTransaction }}>
+        <TransactionContext.Provider value={{ transactions, addTransaction, updateTransaction }}>
             {children}
         </TransactionContext.Provider>
     )

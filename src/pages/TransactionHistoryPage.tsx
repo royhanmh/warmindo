@@ -1,20 +1,39 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { formatRupiah } from '@/data/menu'
-import { Search, RotateCcw, Printer, Receipt, CheckCircle2, ArrowLeftRight, User } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerClose,
+} from '@/components/ui/drawer'
+import { formatRupiah, menuItems, toppings } from '@/data/menu'
+import { Search, RotateCcw, Printer, Receipt, CheckCircle2, ArrowLeftRight, User, Clock, Banknote, QrCode, ChevronLeft } from 'lucide-react'
 import { type Transaction, useTransactions } from '@/contexts/TransactionContext'
 import { ReceiptDialog } from '@/components/pos/ReceiptDialog'
 
+type ClosePayStep = 'select' | 'cash-input' | 'success'
+
 export function TransactionHistoryPage() {
-    const { transactions } = useTransactions()
+    const { transactions, updateTransaction } = useTransactions()
     const [search, setSearch] = useState('')
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+
+    // Close Bill drawer state
+    const [closingBill, setClosingBill] = useState<Transaction | null>(null)
+    const [closePayStep, setClosePayStep] = useState<ClosePayStep>('select')
+    const [cashInput, setCashInput] = useState('')
+    const [cashChange, setCashChange] = useState(0)
+    const [closeMethod, setCloseMethod] = useState('')
 
     const filtered = transactions.filter(t =>
         t.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -25,6 +44,67 @@ export function TransactionHistoryPage() {
     const totalRevenue = transactions
         .filter(t => t.status === 'completed')
         .reduce((sum, t) => sum + t.total, 0)
+
+    const getItemEmoji = (itemName: string) => {
+        const menuItem = menuItems.find(m => itemName.startsWith(m.name))
+        if (menuItem) return menuItem.emoji
+        const topping = toppings.find(t => itemName.startsWith(t.name))
+        if (topping) return topping.emoji
+        return '🍜'
+    }
+
+    const handleCloseBill = (txn: Transaction) => {
+        setClosingBill(txn)
+        setClosePayStep('select')
+        setCashInput('')
+        setCashChange(0)
+        setCloseMethod('')
+    }
+
+    const handleCloseSelectMethod = (method: string) => {
+        setCloseMethod(method)
+        if (method === 'Cash') {
+            setCashInput('')
+            setCashChange(0)
+            setClosePayStep('cash-input')
+        } else {
+            // QRIS - close immediately
+            if (closingBill) {
+                updateTransaction(closingBill.id, { status: 'completed', payment: 'QRIS' })
+            }
+            setClosePayStep('success')
+        }
+    }
+
+    const handleCloseCashConfirm = () => {
+        if (!closingBill) return
+        const paid = parseInt(cashInput)
+        if (isNaN(paid) || paid < closingBill.total) return
+        const change = paid - closingBill.total
+        setCashChange(change)
+        updateTransaction(closingBill.id, {
+            status: 'completed',
+            payment: 'Cash',
+            cashPaid: paid,
+            change: change,
+        })
+        setClosePayStep('success')
+    }
+
+    const handleCloseDrawerDone = () => {
+        setClosingBill(null)
+        setClosePayStep('select')
+    }
+
+    const getQuickAmounts = (total: number) => {
+        const amounts = [total]
+        const rounded = [20000, 50000, 100000, 150000, 200000]
+        for (const r of rounded) {
+            if (r > total && !amounts.includes(r)) amounts.push(r)
+            if (amounts.length >= 4) break
+        }
+        return amounts.sort((a, b) => a - b)
+    }
 
     return (
         <div className="p-4 md:p-6">
@@ -49,21 +129,55 @@ export function TransactionHistoryPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white rounded-xl border p-4 mb-6 gap-4"
+                className="bg-white rounded-xl border p-4 mb-6 shadow-sm"
             >
-                <div className="flex items-center gap-6">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Revenue</p>
-                        <p className="text-xl font-heading font-bold text-success">{formatRupiah(totalRevenue)}</p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="grid grid-cols-1 md:flex md:items-center gap-4 md:gap-8 w-full">
+                        {/* Total Revenue */}
+                        <div className="flex items-center gap-4 md:block">
+                            <div className="p-2.5 bg-success/10 rounded-lg md:hidden">
+                                <Banknote className="w-5 h-5 text-success" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Total Revenue</p>
+                                <p className="text-xl font-heading font-bold text-success">{formatRupiah(totalRevenue)}</p>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block h-8 w-px bg-gray-200" />
+
+                        {/* Transactions Count */}
+                        <div className="flex items-center gap-4 md:block">
+                            <div className="p-2.5 bg-primary/10 rounded-lg md:hidden">
+                                <Receipt className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Transactions</p>
+                                <p className="text-xl font-heading font-bold">{transactions.length}</p>
+                            </div>
+                        </div>
+
+                        {transactions.filter(t => t.status === 'pending').length > 0 && (
+                            <>
+                                <div className="hidden md:block h-8 w-px bg-gray-200" />
+                                {/* Open Bill Count */}
+                                <div className="flex items-center gap-4 md:block">
+                                    <div className="p-2.5 bg-amber-50 rounded-lg md:hidden">
+                                        <Clock className="w-5 h-5 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Open Bill</p>
+                                        <p className="text-xl font-heading font-bold text-amber-500">{transactions.filter(t => t.status === 'pending').length}</p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
-                    <div className="h-8 w-px bg-gray-200" />
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Transactions</p>
-                        <p className="text-xl font-heading font-bold">{transactions.length}</p>
+
+                    {/* Desktop Icon */}
+                    <div className="hidden md:flex items-center gap-2">
+                        <Receipt className="w-5 h-5 text-muted-foreground" />
                     </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Receipt className="w-5 h-5 text-muted-foreground" />
                 </div>
             </motion.div>
 
@@ -78,12 +192,12 @@ export function TransactionHistoryPage() {
                 />
             </div>
 
-            {/* Table */}
+            {/* Desktop Table View */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border overflow-hidden overflow-x-auto"
+                className="hidden md:block bg-white rounded-xl border overflow-hidden"
             >
                 <Table>
                     <TableHeader>
@@ -141,6 +255,11 @@ export function TransactionHistoryPage() {
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                                 <span>Selesai</span>
                                             </Badge>
+                                        ) : txn.status === 'pending' ? (
+                                            <Badge variant="outline" className="gap-1.5 pl-2 pr-2.5 py-1 border-amber-300 bg-amber-50 text-amber-700">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                <span>Open Bill</span>
+                                            </Badge>
                                         ) : (
                                             <Badge variant="destructive" className="gap-1.5 pl-2 pr-2.5 py-1">
                                                 <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -158,11 +277,18 @@ export function TransactionHistoryPage() {
                                             >
                                                 <Printer className="w-4 h-4" />
                                             </Button>
-                                            {txn.status === 'completed' && (
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-primary">
-                                                    <RotateCcw className="w-4 h-4" />
+                                            {txn.status === 'pending' && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 gap-1 px-2 text-xs text-success hover:text-success hover:bg-success/10"
+                                                    onClick={() => handleCloseBill(txn)}
+                                                >
+                                                    <Banknote className="w-3.5 h-3.5" />
+                                                    Close Bill
                                                 </Button>
                                             )}
+
                                         </div>
                                     </TableCell>
                                 </motion.tr>
@@ -171,6 +297,324 @@ export function TransactionHistoryPage() {
                     </TableBody>
                 </Table>
             </motion.div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {filtered.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground bg-white rounded-xl border p-4">
+                        Tidak ada transaksi ditemukan
+                    </div>
+                ) : (
+                    filtered.map((txn, index) => (
+                        <motion.div
+                            key={txn.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.03 }}
+                            className="bg-white rounded-xl border p-4 shadow-sm"
+                        >
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-heading font-bold text-sm">{txn.id}</span>
+                                        <span className="text-xs text-muted-foreground">• {txn.time}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                                        <span className="text-sm font-medium">{txn.customerName}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    {txn.status === 'completed' ? (
+                                        <Badge variant="success" className="gap-1 px-2 py-0.5 text-[10px]">
+                                            <CheckCircle2 className="w-3 h-3" />
+                                            Selesai
+                                        </Badge>
+                                    ) : txn.status === 'pending' ? (
+                                        <Badge variant="outline" className="gap-1 px-2 py-0.5 text-[10px] border-amber-300 bg-amber-50 text-amber-700">
+                                            <Clock className="w-3 h-3" />
+                                            Open Bill
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-[10px]">
+                                            Refund
+                                        </Badge>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="py-2 border-t border-b border-dashed my-2">
+                                <details className="group">
+                                    <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-gray-700">
+                                        <span className="flex items-center gap-2">
+                                            <Receipt className="w-3.5 h-3.5 text-muted-foreground" />
+                                            {txn.items.length} Items
+                                        </span>
+                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                            Lihat detail
+                                            <ChevronLeft className="w-4 h-4 transition-transform -rotate-90 group-open:rotate-90" />
+                                        </div>
+                                    </summary>
+                                    <div className="mt-2 space-y-1.5 pl-1">
+                                        {txn.items.map((item, i) => (
+                                            <div key={i} className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">
+                                                    {getItemEmoji(item.name)} {item.name} x{item.quantity}
+                                                </span>
+                                                <span className="font-medium">{formatRupiah(item.price * item.quantity)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </details>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Total</p>
+                                    <p className="font-heading font-bold text-lg text-primary">{formatRupiah(txn.total)}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => setSelectedTransaction(txn)}
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                    </Button>
+                                    {txn.status === 'pending' && (
+                                        <Button
+                                            size="sm"
+                                            className="h-8 gap-1.5 px-3 text-xs bg-success/10 text-success hover:bg-success hover:text-white border border-success/20"
+                                            onClick={() => handleCloseBill(txn)}
+                                        >
+                                            <Banknote className="w-3.5 h-3.5" />
+                                            Bayar
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                )}
+            </div>
+
+            {/* Close Bill Payment Drawer */}
+            <Drawer open={!!closingBill} onOpenChange={(open) => !open && handleCloseDrawerDone()}>
+                <DrawerContent>
+                    <AnimatePresence mode="wait">
+                        {closePayStep === 'select' && closingBill && (
+                            <motion.div
+                                key="select"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <DrawerHeader className="text-left">
+                                    <DrawerTitle className="text-xl">💰 Close Bill — {closingBill.id}</DrawerTitle>
+                                    <DrawerDescription>
+                                        {closingBill.customerName} · {formatRupiah(closingBill.total)}
+                                    </DrawerDescription>
+                                </DrawerHeader>
+
+                                {/* Payment Method Selection */}
+                                <div className="px-4 pb-2 space-y-2">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <motion.button
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleCloseSelectMethod('QRIS')}
+                                            className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-gray-100 bg-gray-50/50 hover:border-primary hover:bg-primary/5 transition-all duration-200 group"
+                                        >
+                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+                                                <QrCode className="w-8 h-8 text-white" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="font-heading font-bold text-base">QRIS</p>
+                                            </div>
+                                        </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleCloseSelectMethod('Cash')}
+                                            className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-gray-100 bg-gray-50/50 hover:border-success hover:bg-success/5 transition-all duration-200 group"
+                                        >
+                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20 group-hover:shadow-green-500/40 transition-shadow">
+                                                <Banknote className="w-8 h-8 text-white" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="font-heading font-bold text-base">Cash</p>
+                                            </div>
+                                        </motion.button>
+                                    </div>
+                                </div>
+
+                                {/* Ringkasan Pesanan */}
+                                <div className="px-4 py-3">
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                                        <Receipt className="w-3.5 h-3.5" />
+                                        Ringkasan Pesanan
+                                    </div>
+                                    <div className="bg-gray-50 rounded-xl p-3 space-y-1.5">
+                                        {closingBill.items.map((item, i) => (
+                                            <div key={i} className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">
+                                                    {getItemEmoji(item.name)} {item.name} x{item.quantity}
+                                                </span>
+                                                <span className="font-medium">{formatRupiah(item.price * item.quantity)}</span>
+                                            </div>
+                                        ))}
+                                        <div className="border-t pt-2 mt-2 flex justify-between font-heading font-bold">
+                                            <span>Total</span>
+                                            <span className="text-primary">{formatRupiah(closingBill.total)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <DrawerFooter>
+                                    <DrawerClose asChild>
+                                        <Button variant="outline" className="w-full">Batal</Button>
+                                    </DrawerClose>
+                                </DrawerFooter>
+                            </motion.div>
+                        )}
+
+                        {closePayStep === 'cash-input' && closingBill && (
+                            <motion.div
+                                key="cash-input"
+                                initial={{ opacity: 0, x: 40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -40 }}
+                                transition={{ duration: 0.25 }}
+                            >
+                                <DrawerHeader className="text-left">
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setClosePayStep('select')}>
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Button>
+                                        <div>
+                                            <DrawerTitle className="text-lg">💵 Pembayaran Cash</DrawerTitle>
+                                            <DrawerDescription>
+                                                Total: {formatRupiah(closingBill.total)}
+                                            </DrawerDescription>
+                                        </div>
+                                    </div>
+                                </DrawerHeader>
+
+                                <div className="px-4 space-y-4 pb-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="close-cash-input" className="text-sm font-medium">Jumlah Uang Pelanggan</Label>
+                                        <Input
+                                            id="close-cash-input"
+                                            type="number"
+                                            placeholder="Masukkan jumlah..."
+                                            value={cashInput}
+                                            onChange={(e) => {
+                                                setCashInput(e.target.value)
+                                                const val = parseInt(e.target.value)
+                                                if (!isNaN(val)) setCashChange(val - closingBill.total)
+                                            }}
+                                            className="text-lg font-bold h-12 text-center bg-gray-50"
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {/* Quick Amounts */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {getQuickAmounts(closingBill.total).map((amount) => (
+                                            <Button
+                                                key={amount}
+                                                variant="outline"
+                                                size="sm"
+                                                className={`font-heading font-bold ${amount === closingBill.total ? 'border-primary text-primary' : ''}`}
+                                                onClick={() => {
+                                                    setCashInput(amount.toString())
+                                                    setCashChange(amount - closingBill.total)
+                                                }}
+                                            >
+                                                {amount === closingBill.total ? 'Uang Pas' : formatRupiah(amount)}
+                                            </Button>
+                                        ))}
+                                    </div>
+
+                                    {/* Change display */}
+                                    {parseInt(cashInput) >= closingBill.total && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center"
+                                        >
+                                            <p className="text-xs text-emerald-600 mb-1">Kembalian</p>
+                                            <p className="text-2xl font-heading font-bold text-emerald-700">
+                                                {formatRupiah(parseInt(cashInput) - closingBill.total)}
+                                            </p>
+                                        </motion.div>
+                                    )}
+                                </div>
+
+                                <DrawerFooter>
+                                    <Button
+                                        size="lg"
+                                        className="w-full gap-2 shadow-lg shadow-primary/20"
+                                        disabled={!cashInput || parseInt(cashInput) < closingBill.total}
+                                        onClick={handleCloseCashConfirm}
+                                    >
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        Konfirmasi Pembayaran
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="w-full" onClick={() => setClosePayStep('select')}>
+                                        Kembali
+                                    </Button>
+                                </DrawerFooter>
+                            </motion.div>
+                        )}
+
+                        {closePayStep === 'success' && closingBill && (
+                            <motion.div
+                                key="success"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.35 }}
+                                className="flex flex-col items-center justify-center py-10 px-6"
+                            >
+                                <motion.div
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
+                                    className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-4"
+                                >
+                                    <CheckCircle2 className="w-10 h-10 text-success" />
+                                </motion.div>
+                                <h3 className="font-heading font-bold text-xl text-gray-900">Bill Closed!</h3>
+                                <div className="mt-2 text-center text-sm mb-6">
+                                    <p className="text-muted-foreground mb-1">
+                                        {closingBill.customerName} — {closingBill.id}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        via <span className="font-semibold text-foreground">{closeMethod}</span> — {formatRupiah(closingBill.total)}
+                                    </p>
+                                    {cashChange > 0 && (
+                                        <div className="mt-3 bg-gray-50 rounded-lg p-3 space-y-1">
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">Dibayar</span>
+                                                <span className="font-semibold">{formatRupiah(parseInt(cashInput))}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">Kembalian</span>
+                                                <span className="font-semibold text-success">{formatRupiah(cashChange)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <Button className="w-full" onClick={handleCloseDrawerDone}>
+                                    Selesai
+                                </Button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </DrawerContent>
+            </Drawer>
         </div>
     )
 }

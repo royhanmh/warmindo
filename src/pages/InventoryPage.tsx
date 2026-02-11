@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { getStockStatus, type InventoryItem } from '@/data/inventory'
 import { loadInventory, saveInventory } from '@/lib/inventory-store'
 import { Select } from '@/components/ui/native-select'
-import { Search, Plus, Package, AlertTriangle } from 'lucide-react'
+import { Search, Plus, Package, AlertTriangle, Clock } from 'lucide-react'
 
 export function InventoryPage() {
     const [search, setSearch] = useState('')
@@ -65,7 +65,7 @@ export function InventoryPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
             >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="font-heading text-2xl font-bold text-gray-900">
                             📦 Inventory Management
@@ -74,7 +74,7 @@ export function InventoryPage() {
                             Kelola stok bahan dan pantau ketersediaan
                         </p>
                     </div>
-                    <Button onClick={() => setDialogOpen(true)} className="gap-2">
+                    <Button onClick={() => setDialogOpen(true)} className="w-full md:w-auto gap-2">
                         <Plus className="w-4 h-4" />
                         Tambah Stok
                     </Button>
@@ -146,12 +146,12 @@ export function InventoryPage() {
                 />
             </div>
 
-            {/* Table */}
+            {/* Desktop Table */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl border overflow-hidden overflow-x-auto"
+                className="hidden md:block bg-white rounded-xl border overflow-hidden"
             >
                 <Table>
                     <TableHeader>
@@ -165,27 +165,80 @@ export function InventoryPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filtered.map((item, index) => (
-                            <motion.tr
-                                key={item.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.03 }}
-                                className="border-b transition-colors hover:bg-muted/50"
-                            >
-                                <TableCell className="font-semibold">{item.name}</TableCell>
-                                <TableCell className="text-muted-foreground">{item.category}</TableCell>
-                                <TableCell className="text-right font-heading font-bold">
-                                    {item.stock}
+                        {filtered.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    Tidak ada item ditemukan
                                 </TableCell>
-                                <TableCell className="text-muted-foreground">{item.unit}</TableCell>
-                                <TableCell>{statusBadge(item)}</TableCell>
-                                <TableCell className="text-muted-foreground text-sm">{item.lastRestocked}</TableCell>
-                            </motion.tr>
-                        ))}
+                            </TableRow>
+                        ) : (
+                            filtered.map((item, index) => (
+                                <motion.tr
+                                    key={item.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.03 }}
+                                    className="border-b transition-colors hover:bg-muted/50"
+                                >
+                                    <TableCell className="font-semibold">{item.name}</TableCell>
+                                    <TableCell className="text-muted-foreground">{item.category}</TableCell>
+                                    <TableCell className="text-right font-heading font-bold">
+                                        {item.stock}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">{item.unit}</TableCell>
+                                    <TableCell>{statusBadge(item)}</TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">{item.lastRestocked}</TableCell>
+                                </motion.tr>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </motion.div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {filtered.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground bg-white rounded-xl border p-4">
+                        Tidak ada item ditemukan
+                    </div>
+                ) : (
+                    filtered.map((item, index) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.03 }}
+                            className="bg-white rounded-xl border p-4 shadow-sm"
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 className="font-semibold text-lg">{item.name}</h3>
+                                    <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full capitalize">
+                                        {item.category}
+                                    </span>
+                                </div>
+                                {statusBadge(item)}
+                            </div>
+
+                            <div className="flex justify-between items-end mt-4 pt-4 border-t border-dashed">
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Last Restocked</p>
+                                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                        {item.lastRestocked || '-'}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-muted-foreground mb-1">Available Stock</p>
+                                    <p className="text-2xl font-heading font-bold text-primary leading-none">
+                                        {item.stock} <span className="text-sm font-normal text-muted-foreground ml-0.5">{item.unit}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                )}
+            </div>
 
             {/* Add Stock Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

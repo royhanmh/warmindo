@@ -31,7 +31,9 @@ import {
     Receipt,
     User,
     AlertCircle,
-    Printer
+    Printer,
+    Clock,
+    ListPlus
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -39,13 +41,14 @@ type PaymentStep = 'select' | 'cash-input' | 'success'
 
 export function CartSidebar() {
     const { items, bounceKey, removeItem, updateQuantity, clearCart, getTotal, getItemCount, customerName, setCustomerName } = useCart()
-    const { addTransaction } = useTransactions()
+    const { addTransaction, transactions, updateTransaction } = useTransactions()
     const [payDrawerOpen, setPayDrawerOpen] = useState(false)
     const [paymentStep, setPaymentStep] = useState<PaymentStep>('select')
     const [selectedMethod, setSelectedMethod] = useState<string | null>(null)
     const [nameError, setNameError] = useState(false)
     const [cashInput, setCashInput] = useState('')
     const [cashChange, setCashChange] = useState(0)
+    const [openBillDrawerOpen, setOpenBillDrawerOpen] = useState(false)
 
     // Receipt & Auto-close State
     const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null)
@@ -54,6 +57,7 @@ export function CartSidebar() {
 
     const itemCount = getItemCount()
     const total = getTotal()
+    const openBills = transactions.filter(t => t.status === 'pending')
 
     const handleOpenPayment = () => {
         if (!customerName || customerName.trim() === '') {
@@ -76,8 +80,45 @@ export function CartSidebar() {
             setPaymentStep('cash-input')
             return
         }
-        // For non-cash methods, process immediately
+        // For non-cash methods (QRIS), process immediately
         processPayment(method)
+    }
+
+    const handleOpenBill = () => {
+        if (!customerName || customerName.trim() === '') {
+            setNameError(true)
+            document.getElementById('customer-name')?.focus()
+            return
+        }
+        addTransaction({
+            items: items.map(i => ({
+                name: `${i.baseNoodleName} ${i.toppings.length > 0 ? '+' + i.toppings.map(t => t.name).join(' +') : ''}`,
+                quantity: i.quantity,
+                price: i.totalPrice
+            })),
+            total,
+            payment: 'Open Bill',
+            status: 'pending',
+            customerName,
+        })
+        clearCart()
+    }
+
+    const handleAddToOpenBill = (billId: string) => {
+        const bill = transactions.find(t => t.id === billId)
+        if (!bill) return
+        const newItems = items.map(i => ({
+            name: `${i.baseNoodleName} ${i.toppings.length > 0 ? '+' + i.toppings.map(t => t.name).join(' +') : ''}`,
+            quantity: i.quantity,
+            price: i.totalPrice
+        }))
+        const addedTotal = items.reduce((sum, i) => sum + i.totalPrice * i.quantity, 0)
+        updateTransaction(billId, {
+            items: [...bill.items, ...newItems],
+            total: bill.total + addedTotal,
+        })
+        setOpenBillDrawerOpen(false)
+        clearCart()
     }
 
     const handleCashConfirm = () => {
@@ -87,7 +128,7 @@ export function CartSidebar() {
         processPayment('Cash', paid, paid - total)
     }
 
-    const processPayment = (method: string, cashPaid?: number, change?: number) => {
+    const processPayment = (method: string, cashPaid?: number, change?: number, status: 'completed' | 'pending' = 'completed') => {
 
         const now = new Date()
         const txData = {
@@ -98,7 +139,7 @@ export function CartSidebar() {
             })),
             total: total,
             payment: method,
-            status: 'completed' as const,
+            status: status,
             customerName: customerName,
             ...(cashPaid !== undefined && { cashPaid }),
             ...(change !== undefined && { change }),
@@ -332,6 +373,28 @@ export function CartSidebar() {
                         <CreditCard className="w-5 h-5" />
                         Bayar — {formatRupiah(total)}
                     </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                            onClick={handleOpenBill}
+                        >
+                            <Clock className="w-4 h-4" />
+                            Open Bill
+                        </Button>
+                        {openBills.length > 0 && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                                onClick={() => setOpenBillDrawerOpen(true)}
+                            >
+                                <ListPlus className="w-4 h-4" />
+                                Tambah ke Bill ({openBills.length})
+                            </Button>
+                        )}
+                    </div>
                     <Button
                         variant="ghost"
                         size="sm"
@@ -575,6 +638,55 @@ export function CartSidebar() {
                             </motion.div>
                         )}
                     </AnimatePresence>
+                </DrawerContent>
+            </Drawer>
+
+            {/* Open Bill Selection Drawer */}
+            <Drawer open={openBillDrawerOpen} onOpenChange={setOpenBillDrawerOpen}>
+                <DrawerContent>
+                    <DrawerHeader className="text-left">
+                        <DrawerTitle className="text-xl">📋 Tambah ke Open Bill</DrawerTitle>
+                        <DrawerDescription>
+                            Pilih bill yang ingin ditambahkan pesanan
+                        </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="px-4 pb-4 space-y-2 max-h-[50vh] overflow-y-auto">
+                        {openBills.map((bill) => (
+                            <motion.button
+                                key={bill.id}
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleAddToOpenBill(bill.id)}
+                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200 group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                        {bill.id.slice(-3)}
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-heading font-bold text-sm">{bill.customerName}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {bill.items.length} item · {bill.time}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-heading font-bold text-sm text-primary">{formatRupiah(bill.total)}</p>
+                                    <p className="text-xs text-blue-600 font-medium group-hover:underline">+ Tambah</p>
+                                </div>
+                            </motion.button>
+                        ))}
+                        {openBills.length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground text-sm">
+                                Tidak ada Open Bill saat ini
+                            </div>
+                        )}
+                    </div>
+                    <DrawerFooter>
+                        <DrawerClose asChild>
+                            <Button variant="outline" className="w-full">Batal</Button>
+                        </DrawerClose>
+                    </DrawerFooter>
                 </DrawerContent>
             </Drawer>
         </div>
