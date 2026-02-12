@@ -98,7 +98,7 @@ export function POSPage() {
         touchStartY.current = null
 
         // Only trigger if horizontal swipe is dominant and exceeds threshold
-        if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > Math.abs(deltaX)) return
+        if (Math.abs(deltaX) < 25 || Math.abs(deltaY) > Math.abs(deltaX)) return
 
         const currentIndex = categories.findIndex(c => c.id === activeCategory)
         if (deltaX < 0 && currentIndex < categories.length - 1) {
@@ -300,7 +300,7 @@ export function POSPage() {
                 <div
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
-                    className="overflow-hidden"
+                    className="overflow-hidden min-h-[50vh]"
                 >
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
