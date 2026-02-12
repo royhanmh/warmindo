@@ -538,7 +538,10 @@ export function CartSidebar() {
                                                 variant={cashInput === value.toString() ? 'default' : 'outline'}
                                                 size="sm"
                                                 className="text-xs"
-                                                onClick={() => setCashInput(value.toString())}
+                                                onClick={() => {
+                                                    (document.activeElement as HTMLElement)?.blur()
+                                                    setCashInput(value.toString())
+                                                }}
                                             >
                                                 {label}
                                             </Button>
