@@ -517,11 +517,25 @@ export function CartSidebar() {
                                 <DrawerHeader className="text-left">
                                     <DrawerTitle className="text-xl">💵 Pembayaran Cash</DrawerTitle>
                                     <DrawerDescription>
-                                        Total: <span className="font-heading font-bold text-primary text-lg">{formatRupiah(total)}</span>
+                                        Silahkan masukkan nominal pembayaran
                                     </DrawerDescription>
                                 </DrawerHeader>
 
                                 <div className="px-4 pb-4 space-y-4 flex-1 overflow-y-auto">
+                                    {/* Status Display - Top */}
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center">
+                                            <p className="text-xs text-orange-700/80 font-medium mb-1">Total Tagihan</p>
+                                            <p className="font-heading font-bold text-xl text-orange-700">{formatRupiah(total)}</p>
+                                        </div>
+                                        <div className={`border rounded-xl p-3 text-center ${cashInput && parseInt(cashInput) >= total ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
+                                            <p className={`text-xs font-medium mb-1 ${cashInput && parseInt(cashInput) >= total ? 'text-emerald-700/80' : 'text-gray-500'}`}>Kembalian</p>
+                                            <p className={`font-heading font-bold text-xl ${cashInput && parseInt(cashInput) >= total ? 'text-emerald-700' : 'text-gray-400'}`}>
+                                                {cashInput && parseInt(cashInput) >= total ? formatRupiah(parseInt(cashInput) - total) : '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium text-gray-700">Uang Diterima</label>
                                         <Input
@@ -564,22 +578,7 @@ export function CartSidebar() {
                                         ))}
                                     </div>
 
-                                    {/* Change display */}
-                                    {cashInput && parseInt(cashInput) >= total && (
-                                        <div className="bg-success/10 border border-success/20 rounded-xl p-4 text-center">
-                                            <p className="text-sm text-muted-foreground mb-1">Kembalian</p>
-                                            <p className="font-heading font-bold text-2xl text-success">
-                                                {formatRupiah(parseInt(cashInput) - total)}
-                                            </p>
-                                        </div>
-                                    )}
-                                    {cashInput && parseInt(cashInput) < total && (
-                                        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-center">
-                                            <p className="text-sm text-destructive font-medium">
-                                                Uang kurang {formatRupiah(total - parseInt(cashInput))}
-                                            </p>
-                                        </div>
-                                    )}
+
                                 </div>
 
                                 <DrawerFooter>

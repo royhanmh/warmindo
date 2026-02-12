@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -22,7 +22,7 @@ import { Search, RotateCcw, Printer, Receipt, CheckCircle2, ArrowLeftRight, User
 import { type Transaction, useTransactions } from '@/contexts/TransactionContext'
 import { ReceiptDialog } from '@/components/pos/ReceiptDialog'
 
-type ClosePayStep = 'select' | 'cash-input' | 'success'
+type ClosePayStep = 'select' | 'cash-input' | 'qr-display' | 'success'
 
 export function TransactionHistoryPage() {
     const { transactions, updateTransaction } = useTransactions()
@@ -33,6 +33,7 @@ export function TransactionHistoryPage() {
     const [closingBill, setClosingBill] = useState<Transaction | null>(null)
     const [closePayStep, setClosePayStep] = useState<ClosePayStep>('select')
     const [cashInput, setCashInput] = useState('')
+
     const [cashChange, setCashChange] = useState(0)
     const [closeMethod, setCloseMethod] = useState('')
 
@@ -490,13 +491,27 @@ export function TransactionHistoryPage() {
                                         <div>
                                             <DrawerTitle className="text-lg">💵 Pembayaran Cash</DrawerTitle>
                                             <DrawerDescription>
-                                                Total: {formatRupiah(closingBill.total)}
+                                                Silahkan masukkan nominal pembayaran
                                             </DrawerDescription>
                                         </div>
                                     </div>
                                 </DrawerHeader>
 
                                 <div className="px-4 space-y-4 pb-4 flex-1 overflow-y-auto">
+                                    {/* Status Display - Top */}
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center">
+                                            <p className="text-xs text-orange-700/80 font-medium mb-1">Total Tagihan</p>
+                                            <p className="font-heading font-bold text-xl text-orange-700">{formatRupiah(closingBill.total)}</p>
+                                        </div>
+                                        <div className={`border rounded-xl p-3 text-center ${cashInput && parseInt(cashInput) >= closingBill.total ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
+                                            <p className={`text-xs font-medium mb-1 ${cashInput && parseInt(cashInput) >= closingBill.total ? 'text-emerald-700/80' : 'text-gray-500'}`}>Kembalian</p>
+                                            <p className={`font-heading font-bold text-xl ${cashInput && parseInt(cashInput) >= closingBill.total ? 'text-emerald-700' : 'text-gray-400'}`}>
+                                                {cashInput && parseInt(cashInput) >= closingBill.total ? formatRupiah(parseInt(cashInput) - closingBill.total) : '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <Label htmlFor="close-cash-input" className="text-sm font-medium">Jumlah Uang Pelanggan</Label>
                                         <Input
@@ -533,19 +548,7 @@ export function TransactionHistoryPage() {
                                         ))}
                                     </div>
 
-                                    {/* Change display */}
-                                    {parseInt(cashInput) >= closingBill.total && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center"
-                                        >
-                                            <p className="text-xs text-emerald-600 mb-1">Kembalian</p>
-                                            <p className="text-2xl font-heading font-bold text-emerald-700">
-                                                {formatRupiah(parseInt(cashInput) - closingBill.total)}
-                                            </p>
-                                        </motion.div>
-                                    )}
+
                                 </div>
 
                                 <DrawerFooter>
