@@ -328,7 +328,7 @@ export function POSPage() {
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                             <Label htmlFor="menu-name">Nama Menu</Label>
-                            <Input id="menu-name" value={newItem.name} onChange={(e) => setNewItem(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Indomie Goreng Spesial" />
+                            <Input id="menu-name" name="menu-name" value={newItem.name} onChange={(e) => setNewItem(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Indomie Goreng Spesial" />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="menu-category">Kategori</Label>
@@ -338,7 +338,7 @@ export function POSPage() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="menu-price">Harga (Rp)</Label>
-                            <Input id="menu-price" type="number" value={newItem.price} onChange={(e) => setNewItem(p => ({ ...p, price: e.target.value }))} placeholder="e.g. 10000" />
+                            <Input id="menu-price" name="menu-price" type="number" value={newItem.price} onChange={(e) => setNewItem(p => ({ ...p, price: e.target.value }))} placeholder="e.g. 10000" />
                         </div>
                     </div>
                     <DialogFooter>
@@ -358,7 +358,7 @@ export function POSPage() {
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                             <Label htmlFor="edit-name">Nama Menu</Label>
-                            <Input id="edit-name" value={editForm.name} onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                            <Input id="edit-name" name="edit-name" value={editForm.name} onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-category">Kategori</Label>
@@ -368,7 +368,7 @@ export function POSPage() {
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-price">Harga (Rp)</Label>
-                            <Input id="edit-price" type="number" value={editForm.price} onChange={(e) => setEditForm(p => ({ ...p, price: e.target.value }))} />
+                            <Input id="edit-price" name="edit-price" type="number" value={editForm.price} onChange={(e) => setEditForm(p => ({ ...p, price: e.target.value }))} />
                         </div>
                     </div>
                     <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -396,12 +396,16 @@ export function POSPage() {
                                 {editingCat?.id === cat.id ? (
                                     <>
                                         <Input
+                                            id={`edit-cat-emoji-${cat.id}`}
+                                            name={`edit-cat-emoji-${cat.id}`}
                                             value={editCatForm.emoji}
                                             onChange={(e) => setEditCatForm(p => ({ ...p, emoji: e.target.value }))}
                                             className="w-14 text-center text-lg h-9"
                                             placeholder="🍽️"
                                         />
                                         <Input
+                                            id={`edit-cat-label-${cat.id}`}
+                                            name={`edit-cat-label-${cat.id}`}
                                             value={editCatForm.label}
                                             onChange={(e) => setEditCatForm(p => ({ ...p, label: e.target.value }))}
                                             className="flex-1 h-9"
@@ -433,12 +437,16 @@ export function POSPage() {
                         <p className="text-sm font-medium mb-2">Tambah Kategori Baru</p>
                         <div className="flex items-center gap-2">
                             <Input
+                                id="new-cat-emoji"
+                                name="new-cat-emoji"
                                 value={newCat.emoji}
                                 onChange={(e) => setNewCat(p => ({ ...p, emoji: e.target.value }))}
                                 className="w-14 text-center text-lg"
                                 placeholder="🍽️"
                             />
                             <Input
+                                id="new-cat-label"
+                                name="new-cat-label"
                                 value={newCat.label}
                                 onChange={(e) => setNewCat(p => ({ ...p, label: e.target.value }))}
                                 placeholder="Nama kategori"

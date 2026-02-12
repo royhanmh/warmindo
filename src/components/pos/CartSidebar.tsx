@@ -304,6 +304,8 @@ export function CartSidebar() {
                                                 {editingNoteId === item.cartItemId ? (
                                                     <div className="flex gap-1.5 items-center">
                                                         <Input
+                                                            id={`note-${item.cartItemId}`}
+                                                            name={`note-${item.cartItemId}`}
                                                             value={noteText}
                                                             onChange={(e) => setNoteText(e.target.value)}
                                                             placeholder="Catatan..."
