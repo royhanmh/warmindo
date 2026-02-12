@@ -23,12 +23,13 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
     const handlePrint = () => {
         if (!receiptRef.current) return
 
-        const printWindow = window.open('', '_blank', 'width=400,height=600')
-        if (!printWindow) return
+        // Create an invisible iframe
+        const iframe = document.createElement('iframe')
+        iframe.style.display = 'none'
+        document.body.appendChild(iframe)
 
         const receiptHTML = receiptRef.current.innerHTML
-
-        printWindow.document.write(`
+        const content = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -40,90 +41,101 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
                         font-size: 12px;
                         line-height: 1.4;
                         color: #000;
-                        background: #f5f5f5;
+                        background: #fff;
                         display: flex;
                         justify-content: center;
-                        padding: 24px;
+                        padding: 0; 
                     }
                     .receipt {
                         background: #fff;
-                        width: 72mm;
-                        padding: 16px;
-                        border: 1px solid #ddd;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        width: 72mm; /* Standard thermal paper width */
+                        padding: 10px;
+                        border: none;
                     }
-                    .receipt-header { text-align: center; padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
-                    .receipt-header h2 { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
-                    .receipt-header p { font-size: 10px; color: #555; margin-top: 3px; }
-                    .receipt-meta { font-size: 11px; padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
+                    .receipt-header { text-align: center; padding-bottom: 10px; border-bottom: 1px dashed #000; margin-bottom: 10px; }
+                    .receipt-header h2 { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+                    .receipt-header p { font-size: 10px; color: #000; margin-top: 2px; }
+                    .receipt-meta { font-size: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000; margin-bottom: 10px; }
                     .receipt-meta .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
                     .receipt-meta .bold { font-weight: bold; text-transform: uppercase; }
-                    .receipt-items { padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
+                    .receipt-items { padding-bottom: 10px; border-bottom: 1px dashed #000; margin-bottom: 10px; }
                     .receipt-item { margin-bottom: 6px; }
-                    .receipt-item .name { font-weight: bold; }
-                    .receipt-item .note { font-size: 10px; font-style: italic; color: #555; padding-left: 10px; margin-bottom: 2px; }
-                    .receipt-item .detail { display: flex; justify-content: space-between; padding-left: 10px; font-size: 11px; color: #555; }
-                    .receipt-totals { padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
-                    .receipt-totals .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 4px; }
-                    .receipt-totals .sub-row { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+                    .receipt-item .name { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+                    .receipt-item .note { font-size: 9px; font-style: italic; color: #333; padding-left: 8px; margin-bottom: 2px; }
+                    .receipt-item .detail { display: flex; justify-content: space-between; padding-left: 8px; font-size: 10px; color: #000; }
+                    .receipt-totals { padding-bottom: 10px; border-bottom: 1px dashed #000; margin-bottom: 10px; }
+                    .receipt-totals .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+                    .receipt-totals .sub-row { display: flex; justify-content: space-between; font-size: 10px; color: #000; margin-bottom: 2px; }
                     .receipt-footer { text-align: center; padding-top: 6px; }
-                    .receipt-footer .lunas { font-weight: bold; text-transform: uppercase; margin-bottom: 6px; font-size: 13px; }
-                    .receipt-footer .thanks { font-size: 10px; color: #555; }
-                    .receipt-footer .powered { font-size: 9px; color: #999; margin-top: 6px; }
+                    .receipt-footer .lunas { font-weight: bold; text-transform: uppercase; margin-bottom: 6px; font-size: 12px; }
+                    .receipt-footer .thanks { font-size: 10px; color: #000; margin-bottom: 4px; }
+                    .receipt-footer .powered { font-size: 9px; color: #555; margin-top: 4px; }
+                    
                     @media print {
-                        body { background: #fff; padding: 0; display: flex; justify-content: center; }
-                        .receipt { border: none; box-shadow: none; }
-                        @page { margin: 10mm; size: A4; }
+                        body { margin: 0; padding: 0; }
+                        @page { margin: 0; size: auto; }
                     }
                 </style>
             </head>
             <body>
                 <div class="receipt">
-                <div class="receipt-header">
-                    <h2>WARMINDO 88</h2>
-                    <p>Jl. Contoh No. 123, Jakarta</p>
-                    <p>Telp: 0812-3456-7890</p>
-                </div>
-                <div class="receipt-meta">
-                    <div class="row"><span>Tgl:</span><span>${transaction.date} ${transaction.time}</span></div>
-                    <div class="row"><span>No:</span><span>${transaction.id}</span></div>
-                    <div class="row"><span>Plg:</span><span class="bold">${transaction.customerName}</span></div>
-                    <div class="row"><span>Kasir:</span><span>${transaction.cashierName || 'Admin'}</span></div>
-                </div>
-                <div class="receipt-items">
-                    ${transaction.items.map(item => `
-                        <div class="receipt-item">
-                            <div class="name">${item.name}</div>
-                            ${item.note ? `<div class="note">(${item.note})</div>` : ''}
-                            <div class="detail">
-                                <span>${item.quantity} x ${formatRupiah(item.price / item.quantity)}</span>
-                                <span>${formatRupiah(item.price)}</span>
+                    <div class="receipt-header">
+                        <h2>WARMINDO 88</h2>
+                        <p>Jl. Contoh No. 123, Jakarta</p>
+                        <p>Telp: 0812-3456-7890</p>
+                    </div>
+                    <div class="receipt-meta">
+                        <div class="row"><span>Tgl:</span><span>${transaction.date} ${transaction.time}</span></div>
+                        <div class="row"><span>No:</span><span>${transaction.id}</span></div>
+                        <div class="row"><span>Plg:</span><span class="bold">${transaction.customerName}</span></div>
+                        <div class="row"><span>Kasir:</span><span>${transaction.cashierName || 'Admin'}</span></div>
+                    </div>
+                    <div class="receipt-items">
+                        ${transaction.items.map(item => `
+                            <div class="receipt-item">
+                                <div class="name">${item.name}</div>
+                                ${item.note ? `<div class="note">(${item.note})</div>` : ''}
+                                <div class="detail">
+                                    <span>${item.quantity} x ${formatRupiah(item.price / item.quantity)}</span>
+                                    <span>${formatRupiah(item.price)}</span>
+                                </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `).join('')}
+                    </div>
+                    <div class="receipt-totals">
+                        <div class="total-row"><span>TOTAL</span><span>${formatRupiah(transaction.total)}</span></div>
+                        <div class="sub-row"><span>Bayar (${transaction.payment})</span><span>${formatRupiah(transaction.cashPaid || transaction.total)}</span></div>
+                        <div class="sub-row"><span>Kembali</span><span>${formatRupiah(transaction.change || 0)}</span></div>
+                    </div>
+                    <div class="receipt-footer">
+                        <div class="lunas">${transaction.status === 'pending' ? '*** BELUM LUNAS ***' : '*** LUNAS ***'}</div>
+                        <div class="thanks">Terima Kasih!</div>
+                        <div class="powered">Powered by WarmindoPOS</div>
+                    </div>
                 </div>
-                <div class="receipt-totals">
-                    <div class="total-row"><span>TOTAL</span><span>${formatRupiah(transaction.total)}</span></div>
-                    <div class="sub-row"><span>Bayar (${transaction.payment})</span><span>${formatRupiah(transaction.cashPaid || transaction.total)}</span></div>
-                    <div class="sub-row"><span>Kembali</span><span>${formatRupiah(transaction.change || 0)}</span></div>
-                </div>
-                <div class="receipt-footer">
-                    <div class="lunas">${transaction.status === 'pending' ? '*** BELUM LUNAS ***' : '*** LUNAS ***'}</div>
-                    <div class="thanks">Terima Kasih atas Kunjungan Anda!</div>
-                    <div class="powered">Powered by WarmindoPOS</div>
-                </div>
-                </div>
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                        }, 500);
+                    }
+                </script>
             </body>
             </html>
-        `)
+        `
 
-        printWindow.document.close()
-        printWindow.focus()
+        // Write content to iframe
+        const doc = iframe.contentWindow?.document
+        if (doc) {
+            doc.open()
+            doc.write(content)
+            doc.close()
+        }
 
+        // Cleanup after print dialog constructs (waiting a bit longer to be safe)
         setTimeout(() => {
-            printWindow.print()
-            printWindow.close()
-        }, 300)
+            document.body.removeChild(iframe)
+        }, 2000)
     }
 
     return (
