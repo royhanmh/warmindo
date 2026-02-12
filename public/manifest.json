@@ -1,0 +1,31 @@
+{
+    "name": "Warmindo POS",
+    "short_name": "Warmindo",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#D71920",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "https://placehold.co/1080x1920/D71920/FFFFFF/png?text=Mobile+POS",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Mobile Transaction Screen"
+        },
+        {
+            "src": "https://placehold.co/1920x1080/D71920/FFFFFF/png?text=Desktop+POS",
+            "sizes": "1920x1080",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Desktop Dashboard"
+        }
+    ]
+}
