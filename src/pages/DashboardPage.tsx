@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge'
 
 import { inventoryData, getStockStatus } from '@/data/inventory'
 import { formatRupiah } from '@/data/menu'
+import { useTransactions } from '@/contexts/TransactionContext'
 import {
-    TrendingUp,
     ShoppingBag,
     DollarSign,
     AlertTriangle,
@@ -13,12 +13,10 @@ import {
     Clock,
     ChefHat,
     CheckCircle2,
+    Banknote,
 } from 'lucide-react'
 
 const mockDashData = {
-    todaySales: 2450000,
-    todayOrders: 47,
-    avgOrderValue: 52128,
     bestSellers: [
         { name: 'Indomie Goreng + Telur', count: 23, emoji: '🍜' },
         { name: 'Indomie Soto + Kornet', count: 18, emoji: '🍲' },
@@ -39,7 +37,15 @@ const statusConfig = {
 }
 
 export function DashboardPage() {
+    const { transactions } = useTransactions()
     const lowStockItems = inventoryData.filter(i => getStockStatus(i) !== 'in-stock')
+
+    const todayRevenue = transactions
+        .filter(t => t.status === 'completed')
+        .reduce((sum, t) => sum + t.total, 0)
+    const totalRevenue = transactions
+        .reduce((sum, t) => sum + t.total, 0)
+    const todayOrders = transactions.length
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -65,52 +71,68 @@ export function DashboardPage() {
                 </p>
             </motion.div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid — always 2x2 */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"
+                className="grid grid-cols-2 gap-4 mt-6"
             >
-                <motion.div variants={itemVariants}>
-                    <Card className="border-l-4 border-l-success">
-                        <CardContent className="p-3 md:p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Penjualan Hari Ini</p>
-                                    <p className="text-sm sm:text-lg md:text-2xl font-heading font-bold mt-1">{formatRupiah(mockDashData.todaySales)}</p>
-                                </div>
-                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-success/10 flex items-center justify-center">
-                                    <DollarSign className="w-4 h-4 md:w-6 md:h-6 text-success" />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1 mt-2 text-success text-xs font-medium">
-                                <TrendingUp className="w-3 h-3" />
-                                +12% dari kemarin
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
+                {/* Total Semua Pendapatan */}
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-primary">
                         <CardContent className="p-3 md:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Total Pesanan</p>
-                                    <p className="text-lg md:text-2xl font-heading font-bold mt-1">{mockDashData.todayOrders}</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Total Pendapatan</p>
+                                    <p className="text-sm sm:text-lg md:text-2xl font-heading font-bold mt-1">{formatRupiah(totalRevenue)}</p>
                                 </div>
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                    <ShoppingBag className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                                    <Banknote className="w-4 h-4 md:w-6 md:h-6 text-primary" />
                                 </div>
                             </div>
-                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">
-                                Rata-rata {formatRupiah(mockDashData.avgOrderValue)} / order
-                            </p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">Semua transaksi</p>
                         </CardContent>
                     </Card>
                 </motion.div>
 
+                {/* Pendapatan Hari Ini */}
+                <motion.div variants={itemVariants}>
+                    <Card className="border-l-4 border-l-success">
+                        <CardContent className="p-3 md:p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Hari Ini</p>
+                                    <p className="text-sm sm:text-lg md:text-2xl font-heading font-bold mt-1 text-success">{formatRupiah(todayRevenue)}</p>
+                                </div>
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-success/10 flex items-center justify-center">
+                                    <DollarSign className="w-4 h-4 md:w-6 md:h-6 text-success" />
+                                </div>
+                            </div>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">Pendapatan hari ini</p>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Total Pesanan */}
+                <motion.div variants={itemVariants}>
+                    <Card className="border-l-4 border-l-amber-500">
+                        <CardContent className="p-3 md:p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Total Pesanan</p>
+                                    <p className="text-lg md:text-2xl font-heading font-bold mt-1">{todayOrders}</p>
+                                </div>
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <ShoppingBag className="w-4 h-4 md:w-6 md:h-6 text-amber-600" />
+                                </div>
+                            </div>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">Semua pesanan</p>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Low Stock Alert */}
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-accent">
                         <CardContent className="p-3 md:p-4">
@@ -123,9 +145,7 @@ export function DashboardPage() {
                                     <AlertTriangle className="w-4 h-4 md:w-6 md:h-6 text-accent-600" />
                                 </div>
                             </div>
-                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">
-                                Items perlu restock
-                            </p>
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">Items perlu restock</p>
                         </CardContent>
                     </Card>
                 </motion.div>

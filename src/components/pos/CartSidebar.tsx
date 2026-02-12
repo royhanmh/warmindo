@@ -512,6 +512,7 @@ export function CartSidebar() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                                className="flex flex-col max-h-[85vh]"
                             >
                                 <DrawerHeader className="text-left">
                                     <DrawerTitle className="text-xl">💵 Pembayaran Cash</DrawerTitle>
@@ -520,7 +521,7 @@ export function CartSidebar() {
                                     </DrawerDescription>
                                 </DrawerHeader>
 
-                                <div className="px-4 pb-4 space-y-4">
+                                <div className="px-4 pb-4 space-y-4 flex-1 overflow-y-auto">
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium text-gray-700">Uang Diterima</label>
                                         <Input

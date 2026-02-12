@@ -126,7 +126,7 @@ export function TransactionHistoryPage() {
             </motion.div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                     <Card className="border-l-4 border-l-success shadow-sm">
                         <CardContent className="p-4 flex items-center justify-between">
@@ -190,7 +190,7 @@ export function TransactionHistoryPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="hidden md:block bg-white rounded-xl border overflow-hidden"
+                className="hidden lg:block bg-white rounded-xl border overflow-hidden"
             >
                 <Table>
                     <TableHeader>
@@ -292,9 +292,9 @@ export function TransactionHistoryPage() {
             </motion.div>
 
             {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
+            <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filtered.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground bg-white rounded-xl border p-4">
+                    <div className="text-center py-8 text-muted-foreground bg-white rounded-xl border p-4 col-span-full">
                         Tidak ada transaksi ditemukan
                     </div>
                 ) : (
@@ -480,6 +480,7 @@ export function TransactionHistoryPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -40 }}
                                 transition={{ duration: 0.25 }}
+                                className="flex flex-col max-h-[85vh]"
                             >
                                 <DrawerHeader className="text-left">
                                     <div className="flex items-center gap-2">
@@ -495,7 +496,7 @@ export function TransactionHistoryPage() {
                                     </div>
                                 </DrawerHeader>
 
-                                <div className="px-4 space-y-4 pb-4">
+                                <div className="px-4 space-y-4 pb-4 flex-1 overflow-y-auto">
                                     <div className="space-y-2">
                                         <Label htmlFor="close-cash-input" className="text-sm font-medium">Jumlah Uang Pelanggan</Label>
                                         <Input
