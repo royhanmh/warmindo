@@ -55,9 +55,9 @@ export function DashboardPage() {
     }
 
     return (
-        <div className="p-6">
+        <div className="p-3 md:p-6">
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-                <h1 className="font-heading text-2xl font-bold text-gray-900">
+                <h1 className="font-heading text-xl md:text-2xl font-bold text-gray-900">
                     📊 Dashboard
                 </h1>
                 <p className="text-muted-foreground text-sm mt-1">
@@ -74,14 +74,14 @@ export function DashboardPage() {
             >
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-success">
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 md:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Penjualan Hari Ini</p>
-                                    <p className="text-2xl font-heading font-bold mt-1">{formatRupiah(mockDashData.todaySales)}</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Penjualan Hari Ini</p>
+                                    <p className="text-sm sm:text-lg md:text-2xl font-heading font-bold mt-1">{formatRupiah(mockDashData.todaySales)}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
-                                    <DollarSign className="w-6 h-6 text-success" />
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-success/10 flex items-center justify-center">
+                                    <DollarSign className="w-4 h-4 md:w-6 md:h-6 text-success" />
                                 </div>
                             </div>
                             <div className="flex items-center gap-1 mt-2 text-success text-xs font-medium">
@@ -94,17 +94,17 @@ export function DashboardPage() {
 
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-primary">
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 md:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Pesanan</p>
-                                    <p className="text-2xl font-heading font-bold mt-1">{mockDashData.todayOrders}</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Total Pesanan</p>
+                                    <p className="text-lg md:text-2xl font-heading font-bold mt-1">{mockDashData.todayOrders}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                    <ShoppingBag className="w-6 h-6 text-primary" />
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                    <ShoppingBag className="w-4 h-4 md:w-6 md:h-6 text-primary" />
                                 </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">
                                 Rata-rata {formatRupiah(mockDashData.avgOrderValue)} / order
                             </p>
                         </CardContent>
@@ -113,17 +113,17 @@ export function DashboardPage() {
 
                 <motion.div variants={itemVariants}>
                     <Card className="border-l-4 border-l-accent">
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 md:p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Low Stock Alert</p>
-                                    <p className="text-2xl font-heading font-bold mt-1 text-accent-600">{lowStockItems.length}</p>
+                                    <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">Low Stock Alert</p>
+                                    <p className="text-lg md:text-2xl font-heading font-bold mt-1 text-accent-600">{lowStockItems.length}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
-                                    <AlertTriangle className="w-6 h-6 text-accent-600" />
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                                    <AlertTriangle className="w-4 h-4 md:w-6 md:h-6 text-accent-600" />
                                 </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-[10px] md:text-xs text-muted-foreground mt-2">
                                 Items perlu restock
                             </p>
                         </CardContent>
@@ -131,7 +131,7 @@ export function DashboardPage() {
                 </motion.div>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
                 {/* Best Sellers */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -149,10 +149,10 @@ export function DashboardPage() {
                             <div className="space-y-3">
                                 {mockDashData.bestSellers.map((item, i) => (
                                     <div key={i} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-sm font-bold text-muted-foreground w-5">#{i + 1}</span>
-                                            <span className="text-xl">{item.emoji}</span>
-                                            <span className="text-sm font-medium">{item.name}</span>
+                                        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                                            <span className="text-xs md:text-sm font-bold text-muted-foreground w-5">#{i + 1}</span>
+                                            <span className="text-base md:text-xl">{item.emoji}</span>
+                                            <span className="text-xs md:text-sm font-medium truncate">{item.name}</span>
                                         </div>
                                         <Badge variant="secondary">{item.count}x</Badge>
                                     </div>
@@ -182,9 +182,9 @@ export function DashboardPage() {
                                     const StatusIcon = config.icon
                                     return (
                                         <div key={order.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-heading font-bold text-sm">{order.id}</span>
-                                                <span className="text-xs text-muted-foreground">{order.items}</span>
+                                            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                                                <span className="font-heading font-bold text-xs md:text-sm">{order.id}</span>
+                                                <span className="text-[10px] md:text-xs text-muted-foreground truncate">{order.items}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs text-muted-foreground">{order.time}</span>
@@ -221,9 +221,9 @@ export function DashboardPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {lowStockItems.map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-accent/5 border border-accent/20">
-                                        <span className="text-sm font-medium">{item.name}</span>
+                                        <span className="text-xs md:text-sm font-medium">{item.name}</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-heading font-bold text-accent-600">
+                                            <span className="text-xs md:text-sm font-heading font-bold text-accent-600">
                                                 {item.stock} {item.unit}
                                             </span>
                                             <Badge variant={item.stock === 0 ? 'destructive' : 'warning'} className="text-[10px]">

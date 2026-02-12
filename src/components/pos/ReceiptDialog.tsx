@@ -105,7 +105,7 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
                     <div class="sub-row"><span>Kembali</span><span>${formatRupiah(transaction.change || 0)}</span></div>
                 </div>
                 <div class="receipt-footer">
-                    <div class="lunas">*** LUNAS ***</div>
+                    <div class="lunas">${transaction.status === 'pending' ? '*** BELUM LUNAS ***' : '*** LUNAS ***'}</div>
                     <div class="thanks">Terima Kasih atas Kunjungan Anda!</div>
                     <div class="powered">Powered by WarmindoPOS</div>
                 </div>
@@ -185,7 +185,9 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
 
                     {/* Footer */}
                     <div className="text-center space-y-2 pt-2">
-                        <p className="font-bold uppercase">*** LUNAS ***</p>
+                        <p className="font-bold uppercase">
+                            {transaction.status === 'pending' ? '*** BELUM LUNAS ***' : '*** LUNAS ***'}
+                        </p>
                         <p className="text-xs text-gray-500">Terima Kasih atas Kunjungan Anda!</p>
                         <p className="text-[10px] text-gray-400">Powered by WarmindoPOS</p>
                     </div>

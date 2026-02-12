@@ -192,9 +192,24 @@ export function CartSidebar() {
         }, 300)
     }
 
+    const handleCancelClose = () => {
+        if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current)
+        setPayDrawerOpen(false)
+        setTimeout(() => {
+            setPaymentStep('select')
+            setSelectedMethod(null)
+            setCashInput('')
+            setCashChange(0)
+        }, 300)
+    }
+
     const handleDrawerClose = (open: boolean) => {
         if (!open) {
-            handleManualClose()
+            if (paymentStep === 'success') {
+                handleManualClose()
+            } else {
+                handleCancelClose()
+            }
         }
     }
 
@@ -514,7 +529,7 @@ export function CartSidebar() {
                                             onChange={(e) => setCashInput(e.target.value)}
                                             placeholder="Masukkan jumlah uang..."
                                             className="text-lg h-12 font-heading font-bold"
-                                            autoFocus
+                                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
                                         />
                                     </div>
 

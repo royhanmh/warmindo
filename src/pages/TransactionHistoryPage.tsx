@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -124,62 +125,54 @@ export function TransactionHistoryPage() {
                 </p>
             </motion.div>
 
-            {/* Summary Bar */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-xl border p-4 mb-6 shadow-sm"
-            >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="grid grid-cols-1 md:flex md:items-center gap-4 md:gap-8 w-full">
-                        {/* Total Revenue */}
-                        <div className="flex items-center gap-4 md:block">
-                            <div className="p-2.5 bg-success/10 rounded-lg md:hidden">
-                                <Banknote className="w-5 h-5 text-success" />
-                            </div>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                    <Card className="border-l-4 border-l-success shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Total Revenue</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Revenue</p>
                                 <p className="text-xl font-heading font-bold text-success">{formatRupiah(totalRevenue)}</p>
                             </div>
-                        </div>
-
-                        <div className="hidden md:block h-8 w-px bg-gray-200" />
-
-                        {/* Transactions Count */}
-                        <div className="flex items-center gap-4 md:block">
-                            <div className="p-2.5 bg-primary/10 rounded-lg md:hidden">
-                                <Receipt className="w-5 h-5 text-primary" />
+                            <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
+                                <Banknote className="w-6 h-6 text-success" />
                             </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                    <Card className="border-l-4 border-l-primary shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Transactions</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Transactions</p>
                                 <p className="text-xl font-heading font-bold">{transactions.length}</p>
                             </div>
-                        </div>
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Receipt className="w-6 h-6 text-primary" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
 
-                        {transactions.filter(t => t.status === 'pending').length > 0 && (
-                            <>
-                                <div className="hidden md:block h-8 w-px bg-gray-200" />
-                                {/* Open Bill Count */}
-                                <div className="flex items-center gap-4 md:block">
-                                    <div className="p-2.5 bg-amber-50 rounded-lg md:hidden">
-                                        <Clock className="w-5 h-5 text-amber-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Open Bill</p>
-                                        <p className="text-xl font-heading font-bold text-amber-500">{transactions.filter(t => t.status === 'pending').length}</p>
-                                    </div>
+                {transactions.filter(t => t.status === 'pending').length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                        <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Open Bill</p>
+                                    <p className="text-xl font-heading font-bold text-amber-500">
+                                        {transactions.filter(t => t.status === 'pending').length}
+                                    </p>
                                 </div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Desktop Icon */}
-                    <div className="hidden md:flex items-center gap-2">
-                        <Receipt className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                </div>
-            </motion.div>
+                                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <Clock className="w-6 h-6 text-amber-600" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+            </div>
 
             {/* Search */}
             <div className="relative mb-4">
@@ -516,7 +509,7 @@ export function TransactionHistoryPage() {
                                                 if (!isNaN(val)) setCashChange(val - closingBill.total)
                                             }}
                                             className="text-lg font-bold h-12 text-center bg-gray-50"
-                                            autoFocus
+                                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
                                         />
                                     </div>
 

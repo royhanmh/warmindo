@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { MenuGrid } from '@/components/pos/MenuGrid'
@@ -79,6 +79,35 @@ export function POSPage() {
         const main = document.getElementById('main-scroll-container')
         if (main) main.scrollTo({ top: 0, behavior: 'smooth' })
     }, [activeCategory])
+
+    // Swipe gesture for category navigation
+    const touchStartX = useRef<number | null>(null)
+    const touchStartY = useRef<number | null>(null)
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX
+        touchStartY.current = e.touches[0].clientY
+    }, [])
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (touchStartX.current === null || touchStartY.current === null) return
+        const deltaX = e.changedTouches[0].clientX - touchStartX.current
+        const deltaY = e.changedTouches[0].clientY - touchStartY.current
+        touchStartX.current = null
+        touchStartY.current = null
+
+        // Only trigger if horizontal swipe is dominant and exceeds threshold
+        if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > Math.abs(deltaX)) return
+
+        const currentIndex = categories.findIndex(c => c.id === activeCategory)
+        if (deltaX < 0 && currentIndex < categories.length - 1) {
+            // Swipe left → next category
+            setActiveCategory(categories[currentIndex + 1].id)
+        } else if (deltaX > 0 && currentIndex > 0) {
+            // Swipe right → previous category
+            setActiveCategory(categories[currentIndex - 1].id)
+        }
+    }, [categories, activeCategory])
 
     // --- Menu handlers ---
     const handleItemClick = (item: MenuItem) => {
@@ -258,16 +287,21 @@ export function POSPage() {
                     </TabsList>
                 </div>
 
-                {categories.map(cat => (
-                    <TabsContent key={cat.id} value={cat.id}>
-                        <MenuGrid
-                            category={cat.id}
-                            items={menuItems}
-                            onItemClick={handleItemClick}
-                            onEditItem={isAdmin ? handleEditItem : undefined}
-                        />
-                    </TabsContent>
-                ))}
+                <div
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    {categories.map(cat => (
+                        <TabsContent key={cat.id} value={cat.id}>
+                            <MenuGrid
+                                category={cat.id}
+                                items={menuItems}
+                                onItemClick={handleItemClick}
+                                onEditItem={isAdmin ? handleEditItem : undefined}
+                            />
+                        </TabsContent>
+                    ))}
+                </div>
             </Tabs>
 
             {/* Build Your Bowl Drawer */}
