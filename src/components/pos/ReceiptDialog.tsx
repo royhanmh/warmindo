@@ -1,6 +1,7 @@
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
@@ -125,7 +126,8 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[380px] p-0 overflow-hidden bg-white gap-0">
+            <DialogContent className="sm:max-w-[380px] p-0 overflow-hidden bg-white gap-0" aria-describedby={undefined}>
+                <DialogTitle className="sr-only">Struk Pembayaran</DialogTitle>
                 <div ref={receiptRef} className="printable-receipt p-6 space-y-4 bg-white text-gray-900 text-sm font-mono leading-tight max-h-[70vh] overflow-y-auto">
                     {/* Header */}
                     <div className="text-center space-y-1 pb-4 border-b-2 border-dashed border-gray-200">

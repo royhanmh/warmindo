@@ -25,7 +25,7 @@ export function CashierProfileDialog({ open, onOpenChange }: CashierProfileDialo
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
                 <DialogHeader>
                     <DialogTitle className="text-center text-xl">Kartu Identitas Karyawan</DialogTitle>
                 </DialogHeader>
