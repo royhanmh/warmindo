@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { MenuGrid } from '@/components/pos/MenuGrid'
 import { BuildYourBowlDrawer } from '@/components/pos/BuildYourBowlDrawer'
@@ -53,6 +53,7 @@ export function POSPage() {
         const cats = loadCategories()
         return cats.length > 0 ? cats[0].id : 'noodles'
     })
+    const [swipeDirection, setSwipeDirection] = useState(0) // -1 = left, 1 = right
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [menuItems, setMenuItems] = useState<MenuItem[]>(loadMenuItems)
@@ -102,11 +103,20 @@ export function POSPage() {
         const currentIndex = categories.findIndex(c => c.id === activeCategory)
         if (deltaX < 0 && currentIndex < categories.length - 1) {
             // Swipe left → next category
+            setSwipeDirection(1)
             setActiveCategory(categories[currentIndex + 1].id)
         } else if (deltaX > 0 && currentIndex > 0) {
             // Swipe right → previous category
+            setSwipeDirection(-1)
             setActiveCategory(categories[currentIndex - 1].id)
         }
+    }, [categories, activeCategory])
+
+    const handleCategoryChange = useCallback((newCategory: string) => {
+        const oldIndex = categories.findIndex(c => c.id === activeCategory)
+        const newIndex = categories.findIndex(c => c.id === newCategory)
+        setSwipeDirection(newIndex > oldIndex ? 1 : -1)
+        setActiveCategory(newCategory)
     }, [categories, activeCategory])
 
     // --- Menu handlers ---
@@ -274,7 +284,7 @@ export function POSPage() {
             {/* Category Tabs */}
             <Tabs
                 value={activeCategory}
-                onValueChange={setActiveCategory}
+                onValueChange={handleCategoryChange}
             >
                 <div className="sticky top-0 z-10 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-4 pt-1">
                     <TabsList className="bg-white shadow-sm border w-full md:w-auto overflow-x-auto flex md:inline-flex">
@@ -290,17 +300,30 @@ export function POSPage() {
                 <div
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
+                    className="overflow-hidden"
                 >
-                    {categories.map(cat => (
-                        <TabsContent key={cat.id} value={cat.id}>
-                            <MenuGrid
-                                category={cat.id}
-                                items={menuItems}
-                                onItemClick={handleItemClick}
-                                onEditItem={isAdmin ? handleEditItem : undefined}
-                            />
-                        </TabsContent>
-                    ))}
+                    <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                            key={activeCategory}
+                            initial={{ x: swipeDirection * 100, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: swipeDirection * -100, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                        >
+                            {categories.map(cat => (
+                                <TabsContent key={cat.id} value={cat.id} forceMount={cat.id === activeCategory ? true : undefined}>
+                                    {cat.id === activeCategory && (
+                                        <MenuGrid
+                                            category={cat.id}
+                                            items={menuItems}
+                                            onItemClick={handleItemClick}
+                                            onEditItem={isAdmin ? handleEditItem : undefined}
+                                        />
+                                    )}
+                                </TabsContent>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </Tabs>
 
