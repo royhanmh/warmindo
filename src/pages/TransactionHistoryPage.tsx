@@ -529,6 +529,7 @@ export function TransactionHistoryPage() {
                                                 size="sm"
                                                 className={`font-heading font-bold ${amount === closingBill.total ? 'border-primary text-primary' : ''}`}
                                                 onClick={() => {
+                                                    (document.activeElement as HTMLElement)?.blur()
                                                     setCashInput(amount.toString())
                                                     setCashChange(amount - closingBill.total)
                                                 }}
