@@ -33,14 +33,17 @@ import {
     AlertCircle,
     Printer,
     Clock,
-    ListPlus
+    ListPlus,
+    Pencil,
+    X,
+    Check
 } from 'lucide-react'
 import { format } from 'date-fns'
 
 type PaymentStep = 'select' | 'cash-input' | 'success'
 
 export function CartSidebar() {
-    const { items, bounceKey, removeItem, updateQuantity, clearCart, getTotal, getItemCount, customerName, setCustomerName } = useCart()
+    const { items, bounceKey, removeItem, updateQuantity, updateNote, clearCart, getTotal, getItemCount, customerName, setCustomerName } = useCart()
     const { addTransaction, transactions, updateTransaction } = useTransactions()
     const [payDrawerOpen, setPayDrawerOpen] = useState(false)
     const [paymentStep, setPaymentStep] = useState<PaymentStep>('select')
@@ -49,6 +52,10 @@ export function CartSidebar() {
     const [cashInput, setCashInput] = useState('')
     const [cashChange, setCashChange] = useState(0)
     const [openBillDrawerOpen, setOpenBillDrawerOpen] = useState(false)
+
+    // Note editing state
+    const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+    const [noteText, setNoteText] = useState('')
 
     // Receipt & Auto-close State
     const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null)
@@ -94,7 +101,8 @@ export function CartSidebar() {
             items: items.map(i => ({
                 name: `${i.baseNoodleName} ${i.toppings.length > 0 ? '+' + i.toppings.map(t => t.name).join(' +') : ''}`,
                 quantity: i.quantity,
-                price: i.totalPrice
+                price: i.totalPrice,
+                note: i.note
             })),
             total,
             payment: 'Open Bill',
@@ -135,7 +143,8 @@ export function CartSidebar() {
             items: items.map(i => ({
                 name: `${i.baseNoodleName} ${i.toppings.length > 0 ? '+' + i.toppings.map(t => t.name).join(' +') : ''}`,
                 quantity: i.quantity,
-                price: i.totalPrice
+                price: i.totalPrice,
+                note: i.note
             })),
             total: total,
             payment: method,
@@ -289,6 +298,48 @@ export function CartSidebar() {
                                                     + {item.toppings.map(t => t.name).join(', ')}
                                                 </p>
                                             )}
+
+                                            {/* Note UI */}
+                                            <div className="mt-1.5">
+                                                {editingNoteId === item.cartItemId ? (
+                                                    <div className="flex gap-1.5 items-center">
+                                                        <Input
+                                                            value={noteText}
+                                                            onChange={(e) => setNoteText(e.target.value)}
+                                                            placeholder="Catatan..."
+                                                            className="h-7 text-xs px-2"
+                                                            autoFocus
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    updateNote(item.cartItemId, noteText)
+                                                                    setEditingNoteId(null)
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Button size="icon" className="h-7 w-7 shrink-0 bg-green-500 hover:bg-green-600" onClick={() => {
+                                                            updateNote(item.cartItemId, noteText)
+                                                            setEditingNoteId(null)
+                                                        }}>
+                                                            <Check className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-red-400 hover:text-red-500 hover:bg-red-50" onClick={() => setEditingNoteId(null)}>
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingNoteId(item.cartItemId)
+                                                            setNoteText(item.note || '')
+                                                        }}
+                                                        className={`text-xs flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${item.note ? 'text-amber-600 bg-amber-50 font-medium' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                                                    >
+                                                        <Pencil className="w-3 h-3" />
+                                                        {item.note || 'Tambah Catatan'}
+                                                    </button>
+                                                )}
+                                            </div>
+
                                             <p className="font-heading font-bold text-primary text-sm mt-1">
                                                 {formatRupiah(item.totalPrice)}
                                             </p>

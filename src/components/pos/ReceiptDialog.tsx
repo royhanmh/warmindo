@@ -61,6 +61,7 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
                     .receipt-items { padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
                     .receipt-item { margin-bottom: 6px; }
                     .receipt-item .name { font-weight: bold; }
+                    .receipt-item .note { font-size: 10px; font-style: italic; color: #555; padding-left: 10px; margin-bottom: 2px; }
                     .receipt-item .detail { display: flex; justify-content: space-between; padding-left: 10px; font-size: 11px; color: #555; }
                     .receipt-totals { padding-bottom: 10px; border-bottom: 2px dashed #333; margin-bottom: 10px; }
                     .receipt-totals .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin-bottom: 4px; }
@@ -93,6 +94,7 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
                     ${transaction.items.map(item => `
                         <div class="receipt-item">
                             <div class="name">${item.name}</div>
+                            ${item.note ? `<div class="note">(${item.note})</div>` : ''}
                             <div class="detail">
                                 <span>${item.quantity} x ${formatRupiah(item.price / item.quantity)}</span>
                                 <span>${formatRupiah(item.price)}</span>
@@ -161,6 +163,9 @@ export function ReceiptDialog({ open, onOpenChange, transaction }: ReceiptDialog
                         {transaction.items.map((item, index) => (
                             <div key={index} className="flex flex-col">
                                 <span className="font-bold">{item.name}</span>
+                                {item.note && (
+                                    <span className="text-[10px] italic text-gray-500 pl-2 mb-0.5">({item.note})</span>
+                                )}
                                 <div className="flex justify-between pl-2 text-xs text-gray-600">
                                     <span>{item.quantity} x {formatRupiah(item.price / item.quantity)}</span>
                                     <span>{formatRupiah(item.price)}</span>

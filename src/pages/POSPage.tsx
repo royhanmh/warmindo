@@ -121,20 +121,8 @@ export function POSPage() {
 
     // --- Menu handlers ---
     const handleItemClick = (item: MenuItem) => {
-        if (item.category === 'noodles') {
-            setSelectedItem(item)
-            setDrawerOpen(true)
-        } else {
-            addItem({
-                id: item.id,
-                cartItemId: `${item.id}-${Date.now()}`,
-                baseNoodleName: item.name,
-                toppings: [],
-                totalPrice: item.price,
-                quantity: 1,
-                emoji: item.emoji,
-            })
-        }
+        setSelectedItem(item)
+        setDrawerOpen(true)
     }
 
     const handleAddMenu = () => {

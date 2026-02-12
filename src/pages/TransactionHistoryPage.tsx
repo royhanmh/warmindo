@@ -235,7 +235,7 @@ export function TransactionHistoryPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-sm max-w-[200px] truncate text-muted-foreground">
-                                        {txn.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                                        {txn.items.map(i => `${i.name}${i.note ? ` (${i.note})` : ''} (x${i.quantity})`).join(', ')}
                                     </TableCell>
                                     <TableCell className="text-right font-heading font-bold">
                                         {formatRupiah(txn.total)}
@@ -354,6 +354,7 @@ export function TransactionHistoryPage() {
                                             <div key={i} className="flex justify-between text-xs">
                                                 <span className="text-muted-foreground">
                                                     {getItemEmoji(item.name)} {item.name} x{item.quantity}
+                                                    {item.note && <span className="block text-[10px] italic text-gray-500 pl-4">{item.note}</span>}
                                                 </span>
                                                 <span className="font-medium">{formatRupiah(item.price * item.quantity)}</span>
                                             </div>

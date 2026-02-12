@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import {
     Drawer,
@@ -27,6 +28,7 @@ export function BuildYourBowlDrawer({ item, open, onOpenChange }: BuildYourBowlD
     const [selectedToppings, setSelectedToppings] = useState<string[]>([])
     const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
     const [quantity, setQuantity] = useState(1)
+    const [note, setNote] = useState('')
     const { addItem } = useCart()
 
     // Reset variant when item changes
@@ -64,12 +66,14 @@ export function BuildYourBowlDrawer({ item, open, onOpenChange }: BuildYourBowlD
             totalPrice: unitPrice,
             quantity,
             emoji: item.emoji,
+            note: note.trim() || undefined
         })
 
         // Reset and close
         setSelectedToppings([])
         setSelectedVariant(null)
         setQuantity(1)
+        setNote('')
         onOpenChange(false)
     }
 
@@ -77,6 +81,7 @@ export function BuildYourBowlDrawer({ item, open, onOpenChange }: BuildYourBowlD
         setSelectedToppings([])
         setSelectedVariant(null)
         setQuantity(1)
+        setNote('')
         onOpenChange(false)
     }
 
@@ -132,38 +137,57 @@ export function BuildYourBowlDrawer({ item, open, onOpenChange }: BuildYourBowlD
                         </div>
                     )}
 
-                    {/* Toppings Section */}
-                    <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-muted-foreground mb-3">
-                        🧑‍🍳 Pilih Topping
-                    </h3>
-                    <div className="grid gap-2">
-                        {toppings.map((topping) => {
-                            const isSelected = selectedToppings.includes(topping.id)
-                            return (
-                                <motion.div
-                                    key={topping.id}
-                                    whileTap={{ scale: 0.98 }}
-                                    className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
-                                        ? 'border-primary bg-primary-50 shadow-sm'
-                                        : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
-                                        }`}
-                                    onClick={() => handleToppingToggle(topping.id)}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Checkbox
-                                            checked={isSelected}
-                                            onCheckedChange={() => handleToppingToggle(topping.id)}
-                                        />
-                                        <span className="text-xl">{topping.emoji}</span>
-                                        <Label className="cursor-pointer font-medium">{topping.name}</Label>
-                                    </div>
-                                    <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-muted-foreground'
-                                        }`}>
-                                        +{formatRupiah(topping.price)}
-                                    </span>
-                                </motion.div>
-                            )
-                        })}
+                    {/* Toppings Section - Only for Noodles */}
+                    {item.category === 'noodles' && (
+                        <>
+                            <h3 className="font-heading font-bold text-sm uppercase tracking-wider text-muted-foreground mb-3">
+                                🧑‍🍳 Pilih Topping
+                            </h3>
+                            <div className="grid gap-2">
+                                {toppings.map((topping) => {
+                                    const isSelected = selectedToppings.includes(topping.id)
+                                    return (
+                                        <motion.div
+                                            key={topping.id}
+                                            whileTap={{ scale: 0.98 }}
+                                            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all duration-150 ${isSelected
+                                                ? 'border-primary bg-primary-50 shadow-sm'
+                                                : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
+                                                }`}
+                                            onClick={() => handleToppingToggle(topping.id)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    onCheckedChange={() => handleToppingToggle(topping.id)}
+                                                />
+                                                <span className="text-xl">{topping.emoji}</span>
+                                                <Label className="cursor-pointer font-medium">{topping.name}</Label>
+                                            </div>
+                                            <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-muted-foreground'
+                                                }`}>
+                                                +{formatRupiah(topping.price)}
+                                            </span>
+                                        </motion.div>
+                                    )
+                                })}
+                            </div>
+                            <Separator className="my-4" />
+                        </>
+                    )}
+
+                    {/* Note Input */}
+                    <div className="mb-4">
+                        <Label htmlFor="item-note" className="block font-heading font-bold text-sm uppercase tracking-wider text-muted-foreground mb-2">
+                            📝 Catatan (Opsional)
+                        </Label>
+                        <Input
+                            id="item-note"
+                            placeholder="Contoh: Pedas, Tanpa Sayur, Kuah Pisah..."
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            className="bg-white"
+                        />
                     </div>
 
                     <Separator className="my-4" />

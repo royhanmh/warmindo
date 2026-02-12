@@ -15,6 +15,7 @@ export interface CartItem {
     totalPrice: number
     quantity: number
     emoji: string
+    note?: string
 }
 
 interface CartState {
@@ -27,6 +28,7 @@ type CartAction =
     | { type: 'ADD_ITEM'; payload: CartItem }
     | { type: 'REMOVE_ITEM'; payload: string }
     | { type: 'UPDATE_QUANTITY'; payload: { cartItemId: string; quantity: number } }
+    | { type: 'UPDATE_NOTE'; payload: { cartItemId: string; note: string } }
     | { type: 'SET_CUSTOMER_NAME'; payload: string }
     | { type: 'CLEAR_CART' }
 
@@ -58,6 +60,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
                 ),
             }
         }
+        case 'UPDATE_NOTE': {
+            const { cartItemId, note } = action.payload
+            return {
+                ...state,
+                items: state.items.map(item =>
+                    item.cartItemId === cartItemId ? { ...item, note } : item
+                ),
+            }
+        }
         case 'SET_CUSTOMER_NAME':
             return {
                 ...state,
@@ -77,6 +88,7 @@ interface CartContextType {
     addItem: (item: CartItem) => void
     removeItem: (cartItemId: string) => void
     updateQuantity: (cartItemId: string, quantity: number) => void
+    updateNote: (cartItemId: string, note: string) => void
     setCustomerName: (name: string) => void
     clearCart: () => void
     getTotal: () => number
@@ -98,6 +110,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const updateQuantity = useCallback((cartItemId: string, quantity: number) => {
         dispatch({ type: 'UPDATE_QUANTITY', payload: { cartItemId, quantity } })
+    }, [])
+
+    const updateNote = useCallback((cartItemId: string, note: string) => {
+        dispatch({ type: 'UPDATE_NOTE', payload: { cartItemId, note } })
     }, [])
 
     const setCustomerName = useCallback((name: string) => {
@@ -125,6 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 addItem,
                 removeItem,
                 updateQuantity,
+                updateNote,
                 setCustomerName,
                 clearCart,
                 getTotal,

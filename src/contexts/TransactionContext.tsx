@@ -6,6 +6,7 @@ export interface TransactionItem {
     name: string
     quantity: number
     price: number
+    note?: string
 }
 
 export interface Transaction {
