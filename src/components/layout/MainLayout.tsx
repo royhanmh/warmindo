@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, ChefHat, X } from 'lucide-react'
+import { ShoppingCart, ChefHat, X, ChevronRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useCart } from '@/contexts/CartContext'
 import { UserProfile } from './UserProfile'
@@ -18,6 +18,7 @@ export function MainLayout({ sidebar, children, cart, bottomNav }: MainLayoutPro
     const { getItemCount } = useCart()
     const itemCount = getItemCount()
     const [cartOpen, setCartOpen] = useState(false)
+    const [isDesktopCartOpen, setIsDesktopCartOpen] = useState(true)
 
     return (
         <div className="flex h-screen overflow-hidden bg-background">
@@ -81,9 +82,38 @@ export function MainLayout({ sidebar, children, cart, bottomNav }: MainLayoutPro
 
             {/* Desktop Cart Sidebar */}
             {!isMobile && (
-                <aside className="w-[320px] lg:w-[380px] border-l bg-white flex flex-col shrink-0 shadow-lg transition-all duration-300">
-                    {cart}
-                </aside>
+                <>
+                    <aside
+                        className={`
+                            ${isDesktopCartOpen ? 'w-[320px] lg:w-[380px]' : 'w-0'}
+                            border-l bg-white flex flex-col shrink-0 shadow-lg transition-all duration-300 overflow-hidden relative
+                        `}
+                    >
+                        <div className="w-[320px] lg:w-[380px] h-full flex flex-col">
+                            {cart}
+                        </div>
+                    </aside>
+
+                    {/* Desktop Toggle Button */}
+                    <Button
+                        size="icon"
+                        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl shadow-primary/30 z-50 hidden md:flex"
+                        onClick={() => setIsDesktopCartOpen(!isDesktopCartOpen)}
+                    >
+                        {isDesktopCartOpen ? (
+                            <ChevronRight className="w-6 h-6" />
+                        ) : (
+                            <>
+                                <ShoppingCart className="w-5 h-5" />
+                                {itemCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white ring-2 ring-white">
+                                        {itemCount}
+                                    </span>
+                                )}
+                            </>
+                        )}
+                    </Button>
+                </>
             )}
         </div>
     )
