@@ -11,10 +11,10 @@ interface MenuGridProps {
 }
 
 export function MenuGrid({ category, items, onItemClick, onEditItem }: MenuGridProps) {
-    const filteredItems = items.filter(item => item.category === category)
+    const filteredItems = category === 'all' ? items : items.filter(item => item.category === category)
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <AnimatePresence initial={false}>
                 {filteredItems.map((item) => (
                     <motion.div

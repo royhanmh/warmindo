@@ -17,7 +17,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle,
     DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Trash2, Settings2, Pencil } from 'lucide-react'
+import { Plus, Trash2, Settings2, Pencil, Search } from 'lucide-react'
 import { addInventoryItem } from '@/lib/inventory-store'
 
 const MENU_STORAGE_KEY = 'warmindo-menu-items'
@@ -55,6 +55,7 @@ export function POSPage() {
     })
     const [swipeDirection, setSwipeDirection] = useState(0) // -1 = left, 1 = right
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [menuItems, setMenuItems] = useState<MenuItem[]>(loadMenuItems)
     const { addItem } = useCart()
@@ -269,51 +270,79 @@ export function POSPage() {
                 </div>
             </motion.div>
 
-            {/* Category Tabs */}
-            <Tabs
-                value={activeCategory}
-                onValueChange={handleCategoryChange}
-            >
-                <div className="sticky top-0 z-10 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-4 pt-1">
-                    <TabsList className="bg-white shadow-sm border w-full md:w-auto overflow-x-auto flex md:inline-flex">
-                        {categories.map(cat => (
-                            <TabsTrigger key={cat.id} value={cat.id} className="gap-1.5 md:gap-2 md:px-6 flex-1 md:flex-initial whitespace-nowrap">
-                                <span>{cat.emoji}</span>
-                                <span>{cat.label}</span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </div>
+            <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                    placeholder="Cari menu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-10 bg-white"
+                />
+            </div>
 
-                <div
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                    className="overflow-hidden min-h-[50vh]"
-                >
-                    <AnimatePresence mode="wait" initial={false}>
-                        <motion.div
-                            key={activeCategory}
-                            initial={{ x: swipeDirection * 100, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: swipeDirection * -100, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                        >
-                            {categories.map(cat => (
-                                <TabsContent key={cat.id} value={cat.id} forceMount={cat.id === activeCategory ? true : undefined}>
-                                    {cat.id === activeCategory && (
-                                        <MenuGrid
-                                            category={cat.id}
-                                            items={menuItems}
-                                            onItemClick={handleItemClick}
-                                            onEditItem={isAdmin ? handleEditItem : undefined}
-                                        />
-                                    )}
-                                </TabsContent>
-                            ))}
-                        </motion.div>
-                    </AnimatePresence>
+            {/* Category Tabs or Search Results */}
+            {searchQuery ? (
+                <div className="min-h-[50vh]">
+                    <h2 className="font-heading font-semibold text-lg mb-4">
+                        Hasil Pencarian "{searchQuery}"
+                    </h2>
+                    <MenuGrid
+                        category="all"
+                        items={menuItems.filter(item =>
+                            item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        )}
+                        onItemClick={handleItemClick}
+                        onEditItem={isAdmin ? handleEditItem : undefined}
+                    />
                 </div>
-            </Tabs>
+            ) : (
+                <Tabs
+                    value={activeCategory}
+                    onValueChange={handleCategoryChange}
+                >
+                    <div className="sticky top-0 z-10 bg-background -mx-4 px-4 md:-mx-6 md:px-6 pb-4 pt-1">
+                        <TabsList className="bg-white shadow-sm border w-full md:w-auto overflow-x-auto flex md:inline-flex">
+                            {categories.map(cat => (
+                                <TabsTrigger key={cat.id} value={cat.id} className="gap-1.5 md:gap-2 md:px-6 flex-1 md:flex-initial whitespace-nowrap">
+                                    <span>{cat.emoji}</span>
+                                    <span>{cat.label}</span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
+
+                    <div
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        className="overflow-hidden min-h-[50vh]"
+                    >
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                                key={activeCategory}
+                                initial={{ x: swipeDirection * 100, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: swipeDirection * -100, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                            >
+                                {categories.map(cat => (
+                                    <TabsContent key={cat.id} value={cat.id} forceMount={cat.id === activeCategory ? true : undefined}>
+                                        {cat.id === activeCategory && (
+                                            <MenuGrid
+                                                category={cat.id}
+                                                items={menuItems}
+                                                onItemClick={handleItemClick}
+                                                onEditItem={isAdmin ? handleEditItem : undefined}
+                                            />
+                                        )}
+                                    </TabsContent>
+                                ))}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                </Tabs>
+            )
+            }
 
             {/* Build Your Bowl Drawer */}
             <BuildYourBowlDrawer item={selectedItem} open={drawerOpen} onOpenChange={setDrawerOpen} />
@@ -459,6 +488,6 @@ export function POSPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }

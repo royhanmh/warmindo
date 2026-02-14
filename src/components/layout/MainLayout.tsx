@@ -81,7 +81,7 @@ export function MainLayout({ sidebar, children, cart, bottomNav }: MainLayoutPro
 
             {/* Desktop Cart Sidebar */}
             {!isMobile && (
-                <aside className="w-[380px] border-l bg-white flex flex-col shrink-0 shadow-lg">
+                <aside className="w-[320px] lg:w-[380px] border-l bg-white flex flex-col shrink-0 shadow-lg transition-all duration-300">
                     {cart}
                 </aside>
             )}

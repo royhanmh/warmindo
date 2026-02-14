@@ -127,7 +127,7 @@ export function TransactionHistoryPage() {
             </motion.div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                     <Card className="border-l-4 border-l-success shadow-sm">
                         <CardContent className="p-4 flex items-center justify-between">
@@ -156,23 +156,21 @@ export function TransactionHistoryPage() {
                     </Card>
                 </motion.div>
 
-                {transactions.filter(t => t.status === 'pending').length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                        <Card className="border-l-4 border-l-amber-500 shadow-sm">
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Open Bill</p>
-                                    <p className="text-xl font-heading font-bold text-amber-500">
-                                        {transactions.filter(t => t.status === 'pending').length}
-                                    </p>
-                                </div>
-                                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
-                                    <Clock className="w-6 h-6 text-amber-600" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                )}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <Card className="border-l-4 border-l-amber-500 shadow-sm">
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Open Bill</p>
+                                <p className="text-xl font-heading font-bold text-amber-500">
+                                    {transactions.filter(t => t.status === 'pending').length}
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-amber-600" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </div>
 
             {/* Search */}

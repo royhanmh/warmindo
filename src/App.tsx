@@ -1,19 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AppSidebar } from '@/components/layout/AppSidebar'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { CartSidebar } from '@/components/pos/CartSidebar'
 import { CartProvider } from '@/contexts/CartContext'
-import { POSPage } from '@/pages/POSPage'
-import { InventoryPage } from '@/pages/InventoryPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { TransactionHistoryPage } from '@/pages/TransactionHistoryPage'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { TransactionProvider } from '@/contexts/TransactionContext'
+import { Loader2 } from 'lucide-react'
+
+// Lazy load pages to reduce initial bundle size
+const POSPage = lazy(() => import('@/pages/POSPage').then(module => ({ default: module.POSPage })))
+const InventoryPage = lazy(() => import('@/pages/InventoryPage').then(module => ({ default: module.InventoryPage })))
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
+const TransactionHistoryPage = lazy(() => import('@/pages/TransactionHistoryPage').then(module => ({ default: module.TransactionHistoryPage })))
+const LoginPage = lazy(() => import('@/pages/LoginPage').then(module => ({ default: module.LoginPage })))
 import { MobileNav } from '@/components/layout/MobileNav'
 import { type PageType } from '@/config/nav'
-
-import { AuthProvider, useAuth } from '@/contexts/AuthContext'
-import { LoginPage } from '@/pages/LoginPage'
-import { TransactionProvider } from '@/contexts/TransactionContext'
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -44,7 +46,11 @@ function AppContent() {
   }, [activePage])
 
   if (!isAuthenticated) {
-    return <LoginPage />
+    return (
+      <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+        <LoginPage />
+      </Suspense>
+    )
   }
 
   const renderPage = () => {
@@ -79,7 +85,13 @@ function AppContent() {
           exit="exit"
           transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
         >
-          {renderPage()}
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full min-h-[50vh]">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          }>
+            {renderPage()}
+          </Suspense>
         </motion.div>
       </AnimatePresence>
     </MainLayout>

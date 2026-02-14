@@ -31,7 +31,7 @@ export function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -50,7 +50,7 @@ export function LoginPage() {
                             <ChefHat className="w-8 h-8 text-white" />
                         </div>
                         <h1 className="font-heading font-bold text-2xl text-gray-900">Warmindo Ops</h1>
-                        <p className="text-gray-500 text-sm mt-1">Masuk untuk memulai shift</p>
+                        <p className="text-gray-600 text-sm mt-1">Masuk untuk memulai shift</p>
                     </motion.div>
                 </div>
 
@@ -118,6 +118,6 @@ export function LoginPage() {
                     </div>
                 </div>
             </motion.div>
-        </div>
+        </main>
     )
 }
